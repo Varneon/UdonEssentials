@@ -593,6 +593,8 @@ namespace Varneon.UdonEssentials.Editor
             player.SetProgramVariable("PlaylistNames", playlistNames.ToArray());
 
             player.ApplyProxyModifications();
+
+            RefreshPlayerStats();
         }
 
         private void SavePlayerPlaylistsToLibrary()
