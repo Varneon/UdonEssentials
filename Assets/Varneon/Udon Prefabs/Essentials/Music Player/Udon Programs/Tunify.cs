@@ -22,7 +22,10 @@ namespace Varneon.UdonEssentials
         private bool Loop, Shuffle, PlayOnStart;
 
         [SerializeField, ColorUsage(false, false)]
-        private Color HighlightColor;
+        private Color HighlightColor = new Color(0f, 1f, 0f);
+        
+        [SerializeField]
+        private AudioSource[] AudioSources;
 
         [Space]
         [Header("References")]
@@ -36,13 +39,13 @@ namespace Varneon.UdonEssentials
         private GameObject PlaylistItem, SongItem, ErrorPrompt;
 
         [SerializeField]
-        private Text TimeElapsed, TimeLength, TextTitle, TextArtist, TextMaster, TextPlaylist;
+        private Text TimeElapsed, TimeLength, TextTitle, TextArtist, TextPlaylist;
 
         [SerializeField]
         private Button ButtonPlay, ButtonPause, ButtonShuffle, ButtonLoop;
 
         [SerializeField]
-        private Slider TimeProgressBar;
+        private Slider TimeProgressBar, VolumeSlider;
 
         [Space]
         [Header("Debug")]
@@ -167,8 +170,12 @@ namespace Varneon.UdonEssentials
 
             if(loading || songListIndex < 0) { return; }
 
-            nextSongIndex = PlaylistIndices[selectedPlaylist] + songListIndex;
+            int songIndex = PlaylistIndices[selectedPlaylist] + songListIndex;
 
+            if (songIndex == currentSongIndex || songIndex == nextSongIndex) { return; }
+
+            nextSongIndex = songIndex;
+            
             LoadAndPlaySong(nextSongIndex);
         }
 
@@ -184,6 +191,16 @@ namespace Varneon.UdonEssentials
             Loop ^= true;
 
             SetButtonHighlight(ButtonLoop, Loop);
+        }
+
+        public void _UpdateVolume()
+        {
+            float volume = Mathf.Log10(VolumeSlider.value) * 20f;
+            
+            foreach (AudioSource source in AudioSources)
+            {
+                source.volume = volume;
+            }
         }
         #endregion
 
@@ -421,6 +438,8 @@ namespace Varneon.UdonEssentials
         /// </summary>
         private void LoadAndPlayNextSong()
         {
+            if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
+
             if (currentSongIndex >= GetLastPlaylistSongIndex(currentSongPlaylistIndex)) 
             {
                 if (Loop)
@@ -445,6 +464,8 @@ namespace Varneon.UdonEssentials
         /// </summary>
         private void LoadAndPlayPreviousSong()
         {
+            if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
+
             if (currentSongIndex <= PlaylistIndices[currentSongPlaylistIndex]) { Log("Current song is first on the list, can't play previous song"); return; }
 
             Log("Loading previous song...");
@@ -643,15 +664,13 @@ namespace Varneon.UdonEssentials
         {
             Log($"<color=#990000>{nameof(OnVideoError)}</color> {videoError}");
 
-            FinishLoading();
-
             SetNextSongAsCurrent();
 
             HighlightSongListItem(false);
 
             ResetSongInfo();
 
-            AutoPlayNextOrRandom();
+            FinishLoading();
 
             ShowError(videoError.ToString());
         }
