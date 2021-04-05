@@ -97,8 +97,6 @@ namespace Varneon.UdonEssentials.Editor
 
                 rect.y += 2;
 
-                EditorGUI.BeginChangeCheck();
-
                 EditorGUI.PropertyField(
                     new Rect(rect.x, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("Name"), GUIContent.none);
@@ -110,13 +108,6 @@ namespace Varneon.UdonEssentials.Editor
                 EditorGUI.PropertyField(
                     new Rect(rect.x + (rect.width / 3f) * 2, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("URL"), GUIContent.none);
-
-                if (EditorGUI.EndChangeCheck())
-                {
-                    Debug.Log("Fields Changed!");
-
-                    WriteSongsToPlaylist(selectedPlaylistIndex);
-                }
             };
 
             songList.drawHeaderCallback = (Rect rect) => {
@@ -352,11 +343,18 @@ namespace Varneon.UdonEssentials.Editor
 
             scrollPosSongs = EditorGUILayout.BeginScrollView(scrollPosSongs);
 
+            EditorGUI.BeginChangeCheck();
+
             so.Update();
 
             songList.DoLayoutList();
 
             so.ApplyModifiedProperties();
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                WriteSongsToPlaylist(selectedPlaylistIndex);
+            }
 
             EditorGUILayout.EndScrollView();
 
@@ -495,7 +493,7 @@ namespace Varneon.UdonEssentials.Editor
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError(e);
+                    Debug.LogError($"{LogPrefix} {e}");
 
                     library = null;
                 }
