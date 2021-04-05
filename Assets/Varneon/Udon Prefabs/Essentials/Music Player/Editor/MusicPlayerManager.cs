@@ -584,11 +584,13 @@ namespace Varneon.UdonEssentials.Editor
                 }
             }
 
-            player.SetProgramVariable("Urls", urls.ToArray());
-            player.SetProgramVariable("Titles", titles.ToArray());
-            player.SetProgramVariable("Artists", artists.ToArray());
-            player.SetProgramVariable("PlaylistIndices", playlistIndices.ToArray());
-            player.SetProgramVariable("PlaylistNames", playlistNames.ToArray());
+            Undo.RecordObject(player.GetComponent<UdonBehaviour>(), "Apply music library to player");
+
+            player.Urls = urls.ToArray();
+            player.Titles = titles.ToArray();
+            player.Artists = artists.ToArray();
+            player.PlaylistIndices = playlistIndices.ToArray();
+            player.PlaylistNames = playlistNames.ToArray();
 
             player.ApplyProxyModifications();
 
