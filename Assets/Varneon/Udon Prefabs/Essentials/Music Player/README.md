@@ -11,7 +11,7 @@ Instructions for setting up the player:
 
 2) Place the root GameObject where you would like the player to be located
 
-3) If you would like to scale the player to fit certain environment, you may select the first child GameObject in the hierarchy under the root that havs the Canvas component on it and adjust the "Width" and "Height" of the RectTransform on the top of the inspector
+3) If you would like to scale the player to fit certain environment, you may select the first child GameObject in the hierarchy under the root that has the Canvas component on it and adjust the "Width" and "Height" of the RectTransform on the top of the inspector
 
 4) Open the Music Player Manager by opening "Varneon" > "Udon Prefab Editors" > "Music Player Manager" on your Unity Editor toolbar
 
