@@ -1,15 +1,17 @@
 ﻿#pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
 #pragma warning disable UNT0003 // https://vrchat.canny.io/vrchat-udon-closed-alpha-bugs/p/getcomponentst-functions-are-not-defined-internally-for-vrcsdk3-components
+#pragma warning disable 649
 
 using System;
 using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
+using Varneon.UdonPrefabs.RuntimeTools;
 using VRC.SDK3.Components.Video;
 using VRC.SDK3.Video.Components;
 using VRC.SDKBase;
 
-namespace Varneon.UdonEssentials
+namespace Varneon.UdonPrefabs.Essentials
 {
     public class Tunify : UdonSharpBehaviour
     {
@@ -50,7 +52,7 @@ namespace Varneon.UdonEssentials
         [Space]
         [Header("Debug")]
         [SerializeField]
-        private Varneon.UdonRuntimeTools.UdonDebugger Debugger;
+        private UdonDebugger Debugger;
         #endregion
 
         #region Private Variables
@@ -109,6 +111,8 @@ namespace Varneon.UdonEssentials
             SetButtonHighlight(ButtonShuffle, Shuffle);
 
             SetButtonHighlight(ButtonLoop, Loop);
+
+            _UpdateVolume();
         }
 
         private void Update()
@@ -195,8 +199,8 @@ namespace Varneon.UdonEssentials
 
         public void _UpdateVolume()
         {
-            float volume = Mathf.Log10(VolumeSlider.value) * 20f;
-            
+            float volume = 1f - Mathf.Pow(VolumeSlider.value - 1f, 2f);
+
             foreach (AudioSource source in AudioSources)
             {
                 source.volume = volume;

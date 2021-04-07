@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: Tunify
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 0604705223c73214991a21d665608dc9,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: d6c4e75d1b6880545980317c49beda97,
     type: 2}
   udonAssembly: 
   assemblyError: 
@@ -1384,7 +1384,7 @@ MonoBehaviour:
       Data: 82|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: Varneon.UdonRuntimeTools.UdonDebugger, Assembly-CSharp
+      Data: Varneon.UdonPrefabs.RuntimeTools.UdonDebugger, Assembly-CSharp
     - Name: 
       Entry: 8
       Data: 

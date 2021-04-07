@@ -1,9 +1,11 @@
-﻿using UdonSharp;
+﻿#pragma warning disable 649
+
+using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using UnityEngine.UI;
 
-namespace Varneon.UdonRuntimeTools
+namespace Varneon.UdonPrefabs.RuntimeTools
 {
     public class UdonDebugger : UdonSharpBehaviour
     {
@@ -21,11 +23,8 @@ namespace Varneon.UdonRuntimeTools
             KeyTextUpscale = KeyCode.KeypadPlus,
             KeyTextDownscale = KeyCode.KeypadMinus;
 
-        private bool vrEnabled = false;
-
         private void Start()
         {
-            if (Networking.LocalPlayer.IsUserInVR()) { vrEnabled = true; }
             text.text = string.Format("You are using Varneon's Udon debugger.\nControls:\nToggle Debugger: {0} + {1}\nClear Log: {0} + {2}\nUpscale Text: {0} + {3}\nDownscale Text: {0} + {4}", KeyControl, KeyHide, KeyClear, KeyTextUpscale, KeyTextDownscale);
         }
 
@@ -40,7 +39,7 @@ namespace Varneon.UdonRuntimeTools
             }
         }
 
-        public void Toggle() { text.canvas.enabled = !text.canvas.enabled; }
+        public void Toggle() { text.gameObject.SetActive(!text.gameObject.activeSelf); }
         public void UpscaleText() { text.fontSize++; }
         public void DownscaleText() { text.fontSize--; }
 
@@ -49,21 +48,10 @@ namespace Varneon.UdonRuntimeTools
             text.text += $"\n{message}";
             if (text.text.Split('\n').Length > MaxLines)
             {
-                //history = history.Substring(history.IndexOf('\n'));
                 text.text = text.text.Remove(0, text.text.IndexOf('\n') + 1);
             }
         }
 
         public void Clear() { text.text = string.Empty; }
-
-        /*
-        private void DebugLog(string message)
-        {
-            if(Debugger != null)
-            {
-                Debugger.WriteLine(message);
-            }
-        }
-        */
     }
 }

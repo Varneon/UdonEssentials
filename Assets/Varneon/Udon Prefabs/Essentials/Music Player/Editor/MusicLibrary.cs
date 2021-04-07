@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Varneon.UdonEssentials.Editor
+namespace Varneon.UdonPrefabs.Essentials.Editor
 {
     [CreateAssetMenu(fileName = "My Music Library", menuName = "ScriptableObjects/VFabs Tunify Library", order = 1)]
     public class MusicLibrary : ScriptableObject
