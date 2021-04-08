@@ -13,6 +13,7 @@ using VRC.SDKBase;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
+    [RequireComponent(typeof(VRCUnityVideoPlayer))]
     public class Tunify : UdonSharpBehaviour
     {
         #region Serialized Fields
@@ -61,19 +62,19 @@ namespace Varneon.UdonPrefabs.Essentials
         private readonly string LogPrefix = "[<color=#009999>Tunify</color>]:";
 
         [HideInInspector]
-        public VRCUrl[] Urls;
+        public VRCUrl[] Urls = new VRCUrl[0];
 
         [HideInInspector]
-        public string[] Titles;
+        public string[] Titles = new string[0];
 
         [HideInInspector]
-        public string[] Artists;
+        public string[] Artists = new string[0];
 
         [HideInInspector]
-        public int[] PlaylistIndices;
+        public int[] PlaylistIndices = new int[0];
 
         [HideInInspector]
-        public string[] PlaylistNames;
+        public string[] PlaylistNames = new string[0];
 
         private int selectedPlaylist;
 
