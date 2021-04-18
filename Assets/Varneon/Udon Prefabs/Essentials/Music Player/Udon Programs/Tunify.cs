@@ -200,7 +200,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
         public void _UpdateVolume()
         {
-            float volume = 1f - Mathf.Pow(VolumeSlider.value - 1f, 2f);
+            float volume = Mathf.Clamp01(-Mathf.Log10(1f - VolumeSlider.value * 0.9f));
 
             foreach (AudioSource source in AudioSources)
             {
