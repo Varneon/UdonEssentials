@@ -1,5 +1,5 @@
 # UdonEssentials
-UdonEssentials is my evergrowing collection of Udon prefabs for VRChat worlds that I think everyone should have at their disposal.
+UdonEssentials is an evergrowing collection of Udon prefabs for VRChat worlds that I think everyone should have at their disposal.
 
 If you would like to test the prefabs in game, feel free to visit this world: https://vrchat.com/home/world/wrld_62e85ddd-65be-4676-83bd-3879347f4eb5
 
