@@ -1,4 +1,3 @@
-*.meta
 /*
 !/.git
 !/.github
@@ -11,7 +10,6 @@
 /Assets/Varneon/*
 !/Assets/Varneon/Resources
 !/Assets/Varneon/Resources/Icons
-!/Assets/Varneon/Resources/Icons/*.png.meta
 !/Assets/Varneon/Udon Prefabs
 !/Assets/Varneon/Udon Prefabs/Essentials/Music Player/Textures/*.png.meta
 !/Assets/Varneon/Udon Prefabs/Essentials/Playerlist/Textures/*.png.meta
