@@ -10,6 +10,11 @@ using Varneon.UdonPrefabs.RuntimeTools;
 using VRC.SDK3.Components.Video;
 using VRC.SDK3.Video.Components;
 using VRC.SDKBase;
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+using UnityEditor;
+using UdonSharpEditor;
+using VRC.Udon;
+#endif
 
 namespace Varneon.UdonPrefabs.Essentials
 {
@@ -681,4 +686,70 @@ namespace Varneon.UdonPrefabs.Essentials
         }
         #endregion
     }
+
+    #region Custom Editor
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+    [CustomEditor(typeof(Tunify))]
+    public class TunifyEditor : Editor
+    {
+        private Tunify tunify;
+
+        private void OnEnable()
+        {
+            tunify = (Tunify)target;
+
+            UdonBehaviour ub = tunify.GetComponent<UdonBehaviour>();
+
+            if (ub == null)
+            {
+                UdonSharpEditorUtility.ConvertToUdonBehaviours(new UdonSharpBehaviour[] { tunify });
+
+                return;
+            }
+
+            ub.AllowCollisionOwnershipTransfer = false;
+            ub.SynchronizePosition = false;
+        }
+
+        public override void OnInspectorGUI()
+        {
+            DrawBanner();
+
+            EditorGUILayout.Space();
+
+            base.OnInspectorGUI();
+        }
+
+        private void DrawBanner()
+        {
+            GUI.color = new Color(0f, 0.5f, 1f);
+
+            GUILayout.BeginVertical(EditorStyles.helpBox);
+
+            GUI.color = Color.white;
+
+            GUILayout.Label("Varneon's UdonEssentials - Tunify", EditorStyles.whiteLargeLabel);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
+
+            if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+            {
+                Application.OpenURL("https://github.com/Varneon");
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndVertical();
+
+            GUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+            GUILayout.Label($"[Library] Songs: {tunify.Urls.Length} | Playlists: {tunify.PlaylistIndices.Length}");
+
+            GUILayout.EndHorizontal();
+        }
+    }
+#endif
+    #endregion
 }
