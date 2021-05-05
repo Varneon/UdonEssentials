@@ -490,8 +490,6 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private void DrawBanner()
         {
-            GUILayout.BeginVertical();
-
             GUI.color = new Color(0f, 0.5f, 1f);
 
             GUILayout.BeginVertical(EditorStyles.helpBox);
@@ -510,8 +508,6 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             }
 
             GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
 
             GUILayout.EndVertical();
         }
