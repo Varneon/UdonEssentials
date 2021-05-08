@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 578640411734013950}
   - component: {fileID: 578640411734013949}
   m_Layer: 0
-  m_Name: Text_Title_InstanceLifetime
+  m_Name: Text_Title_LocalPlayerTime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -76,7 +76,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'Instance Lifetime:'
+  m_Text: 'Your Time In World:'
 --- !u!1 &578640411899811996
 GameObject:
   m_ObjectHideFlags: 0
@@ -985,7 +985,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000030435622}
+  m_AnchoredPosition: {x: 0, y: -0.00000008195639}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &578640412884448687
@@ -1037,7 +1037,7 @@ GameObject:
   - component: {fileID: 578640413001761598}
   - component: {fileID: 578640413001761597}
   m_Layer: 0
-  m_Name: Text_Title_LocalPlayerTime
+  m_Name: Text_Title_InstanceLifetime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1101,7 +1101,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'Your Time In World:'
+  m_Text: 'Instance Lifetime:'
 --- !u!1 &578640413191663528
 GameObject:
   m_ObjectHideFlags: 0
@@ -1268,7 +1268,7 @@ GameObject:
   - component: {fileID: 578640413624954516}
   - component: {fileID: 578640413624954507}
   m_Layer: 0
-  m_Name: Text_LocalPlayerTime
+  m_Name: Text_InstanceLifetime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1332,7 +1332,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: <LocalPlayerTime>
+  m_Text: <InstanceLifetime>
 --- !u!1 &578640413690205753
 GameObject:
   m_ObjectHideFlags: 0
@@ -1345,7 +1345,7 @@ GameObject:
   - component: {fileID: 578640413690206148}
   - component: {fileID: 578640413690205755}
   m_Layer: 0
-  m_Name: Text_InstanceLifetime
+  m_Name: Text_LocalPlayerTime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1409,7 +1409,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: <InstanceLifetime>
+  m_Text: <LocalPlayerTime>
 --- !u!1001 &6202011095891821553
 PrefabInstance:
   m_ObjectHideFlags: 0
