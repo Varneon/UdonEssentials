@@ -10,6 +10,7 @@ using Varneon.UdonPrefabs.RuntimeTools;
 using VRC.SDK3.Components.Video;
 using VRC.SDK3.Video.Components;
 using VRC.SDKBase;
+using VRC.Udon.Common;
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
 using UnityEditor;
 using UdonSharpEditor;
@@ -53,7 +54,7 @@ namespace Varneon.UdonPrefabs.Essentials
         private Button ButtonPlay, ButtonPause, ButtonShuffle, ButtonLoop;
 
         [SerializeField]
-        private Slider TimeProgressBar, VolumeSlider;
+        private Slider TimeProgressBar, VolumeSlider, SeekSlider;
 
         [Space]
         [Header("Debug")]
@@ -89,7 +90,7 @@ namespace Varneon.UdonPrefabs.Essentials
         
         private int nextSongIndex = -1, nextSongPlaylistIndex = -1;
 
-        private bool loading;
+        private bool loading, seeking, changingVolume;
 
         private float loadingTime, averageLoadingTime = 5f;
 
@@ -119,6 +120,8 @@ namespace Varneon.UdonPrefabs.Essentials
             SetButtonHighlight(ButtonLoop, Loop);
 
             _UpdateVolume();
+
+            EndVolumeChange();
         }
 
         private void Update()
@@ -211,6 +214,21 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 source.volume = volume;
             }
+
+            if (changingVolume) { return; }
+
+            SetSliderHighlight(VolumeSlider, true);
+
+            VolumeSlider.handleRect.gameObject.SetActive(true);
+
+            changingVolume = true;
+        }
+
+        public void _Seek()
+        {
+            if (seeking) { return; }
+
+            SetSeekingActive(true);
         }
         #endregion
 
@@ -361,9 +379,9 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void UpdateTimeInfo()
         {
-            if (!player.IsPlaying){ return; }
+            if (!player.IsPlaying && !seeking) { return; }
 
-            float timeElapsed = player.GetTime();
+            float timeElapsed = seeking ? SeekSlider.value * songDuration : player.GetTime();
 
             TimeElapsed.text = GetFormattedTimeFromSeconds(timeElapsed);
 
@@ -617,6 +635,55 @@ namespace Varneon.UdonPrefabs.Essentials
         }
 
         /// <summary>
+        /// Set seeking mode active
+        /// </summary>
+        /// <param name="active"></param>
+        private void SetSeekingActive(bool active)
+        {
+            SetSliderHighlight(TimeProgressBar, active);
+
+            seeking = active;
+
+            SeekSlider.handleRect.gameObject.SetActive(active);
+        }
+
+        /// <summary>
+        /// Highlights the slider
+        /// </summary>
+        /// <param name="slider"></param>
+        /// <param name="highlight"></param>
+        private void SetSliderHighlight(Slider slider, bool highlight)
+        {
+            slider.fillRect.GetComponent<Image>().color = highlight ? HighlightColor : Color.white;
+        }
+
+        /// <summary>
+        /// Resets volume slider to its original state
+        /// </summary>
+        private void EndVolumeChange()
+        {
+            if (!changingVolume) { return; }
+
+            SetSliderHighlight(VolumeSlider, false);
+
+            VolumeSlider.handleRect.gameObject.SetActive(false);
+
+            changingVolume = false;
+        }
+
+        /// <summary>
+        /// Resets the seek slider to its original state
+        /// </summary>
+        private void EndSeek()
+        {
+            if (!seeking) { return; }
+
+            player.SetTime(SeekSlider.value * songDuration);
+
+            SetSeekingActive(false);
+        }
+
+        /// <summary>
         /// Proxy for printing messages in logs
         /// </summary>
         /// <param name="text"></param>
@@ -683,6 +750,17 @@ namespace Varneon.UdonPrefabs.Essentials
             FinishLoading();
 
             ShowError(videoError.ToString());
+        }
+        #endregion
+
+        #region VRC Override Methods
+        public override void InputUse(bool value, UdonInputEventArgs args)
+        {
+            if (value) { return; }
+
+            EndSeek();
+
+            EndVolumeChange();
         }
         #endregion
     }
