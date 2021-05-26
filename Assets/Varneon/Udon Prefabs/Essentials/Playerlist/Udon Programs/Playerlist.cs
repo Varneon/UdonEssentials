@@ -60,9 +60,11 @@ namespace Varneon.UdonPrefabs.Essentials
 
             localJoinTime = utcNow;
 
-            if (localPlayer.isMaster == true && instanceStartTime == 0)
+            if (localPlayer.isMaster)
             {
                 instanceStartTime = utcNow;
+
+                RequestSerialization();
             }
 
             PlayerListItem.transform.GetChild(5).GetComponent<Image>().sprite = Group1Icon;

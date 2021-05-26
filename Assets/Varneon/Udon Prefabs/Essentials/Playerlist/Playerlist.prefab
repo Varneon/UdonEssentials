@@ -263,7 +263,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 578640411899811997}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -318,6 +318,7 @@ MonoBehaviour:
   proximity: 2
   SynchronizePosition: 0
   AllowCollisionOwnershipTransfer: 0
+  Reliable: 1
   serializedProgramAsset: {fileID: 11400000, guid: be8e1e359b79c3b4e9b09fe8d165b993,
     type: 2}
   programSource: {fileID: 11400000, guid: 4598afb07c26d4b449714c5c88981cb2, type: 2}
