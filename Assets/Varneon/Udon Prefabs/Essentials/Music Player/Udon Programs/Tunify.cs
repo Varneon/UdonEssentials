@@ -19,7 +19,7 @@ using VRC.Udon;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
-    [RequireComponent(typeof(VRCUnityVideoPlayer))]
+    [RequireComponent(typeof(VRCUnityVideoPlayer))] //AVPro support coming soon
     public class Tunify : UdonSharpBehaviour
     {
         #region Serialized Fields
@@ -28,13 +28,21 @@ namespace Varneon.UdonPrefabs.Essentials
         private float LoadingTimeout = 20f;
 
         [SerializeField]
-        private bool Loop, Shuffle, PlayOnStart;
+        private bool Repeat, Shuffle, PlayOnStart;
 
         [SerializeField, ColorUsage(false, false)]
         private Color HighlightColor = new Color(0f, 1f, 0f);
         
         [SerializeField]
         private AudioSource[] AudioSources;
+
+        //Placeholder for upcoming HUD
+        /*
+        [Space]
+        [Header("Optional")]
+        [SerializeField]
+        private HUD HUD;
+        */
 
         [Space]
         [Header("References")]
@@ -48,10 +56,13 @@ namespace Varneon.UdonPrefabs.Essentials
         private GameObject PlaylistItem, SongItem, ErrorPrompt;
 
         [SerializeField]
-        private Text TimeElapsed, TimeLength, TextTitle, TextArtist, TextPlaylist;
+        private Text TimeElapsed, TimeLength, TextTitle, TextArtist, TextPlaylist, TextLoading;
 
         [SerializeField]
-        private Button ButtonPlay, ButtonPause, ButtonShuffle, ButtonLoop;
+        private RectTransform LoadingIcon, VolumeIcons;
+
+        [SerializeField]
+        private Button ButtonPlay, ButtonPause, ButtonShuffle, ButtonShufflePlaylist, ButtonRepeat, ButtonRepeatOne;
 
         [SerializeField]
         private Slider TimeProgressBar, VolumeSlider, SeekSlider;
@@ -99,6 +110,12 @@ namespace Varneon.UdonPrefabs.Essentials
         private float songDuration;
 
         private Transform nextSongListItem, currentSongListItem;
+
+        private Image[] volumeIcons;
+
+        private float originalVolume;
+
+        private bool repeatOne, shufflePlaylist;
         #endregion
 
         #region Unity Methods
@@ -106,22 +123,30 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             player = (VRCUnityVideoPlayer)GetComponent(typeof(VRCUnityVideoPlayer));
 
+            volumeIcons = VolumeIcons.GetComponentsInChildren<Image>();
+
             InitializePlaylists();
 
             UpdateSongList();
 
             if (PlayOnStart)
             {
-                LoadAndPlaySong(UnityEngine.Random.Range(0, Urls.Length - 1));
+                selectedPlaylist = GetPlaylistIndexOfSong(LoadAndPlayAnyRandomSong());
+
+                UpdateSongList();
             }
 
             SetButtonHighlight(ButtonShuffle, Shuffle);
 
-            SetButtonHighlight(ButtonLoop, Loop);
+            SetButtonHighlight(ButtonRepeat, Repeat);
+
+            SetButtonHighlight(ButtonRepeatOne, true);
+
+            SetButtonHighlight(ButtonShufflePlaylist, true);
 
             _UpdateVolume();
 
-            EndVolumeChange();
+            EndVolumeChange(); 
         }
 
         private void Update()
@@ -148,6 +173,8 @@ namespace Varneon.UdonPrefabs.Essentials
             player.Pause();
 
             UpdatePlayPauseButton(false);
+
+            UpdatePlayingPlaylistIcon(false);
         }
 
         public void _Next()
@@ -197,13 +224,45 @@ namespace Varneon.UdonPrefabs.Essentials
             Shuffle ^= true;
 
             SetButtonHighlight(ButtonShuffle, Shuffle);
+
+            if (Shuffle) { return; }
+
+            shufflePlaylist = true;
+
+            ButtonShufflePlaylist.gameObject.SetActive(true);
+            ButtonShuffle.gameObject.SetActive(false);
         }
 
-        public void _ToggleLoop()
+        public void _ToggleShufflePlaylist()
         {
-            Loop ^= true;
+            shufflePlaylist = false;
 
-            SetButtonHighlight(ButtonLoop, Loop);
+            ButtonShuffle.gameObject.SetActive(true);
+            ButtonShufflePlaylist.gameObject.SetActive(false);
+        }
+
+        public void _ToggleRepeat()
+        {
+            Repeat ^= true;
+
+            SetButtonHighlight(ButtonRepeat, Repeat);
+
+            if(Repeat) { return; }
+
+            repeatOne = true;
+
+            ButtonRepeatOne.gameObject.SetActive(true);
+            ButtonRepeat.gameObject.SetActive(false);
+        }
+
+        public void _ToggleRepeatOne()
+        {
+            repeatOne = false;
+
+            SetButtonHighlight(ButtonRepeat, false);
+
+            ButtonRepeat.gameObject.SetActive(true);
+            ButtonRepeatOne.gameObject.SetActive(false);
         }
 
         public void _UpdateVolume()
@@ -215,6 +274,8 @@ namespace Varneon.UdonPrefabs.Essentials
                 source.volume = volume;
             }
 
+            UpdateVolumeIcon();
+
             if (changingVolume) { return; }
 
             SetSliderHighlight(VolumeSlider, true);
@@ -222,6 +283,17 @@ namespace Varneon.UdonPrefabs.Essentials
             VolumeSlider.handleRect.gameObject.SetActive(true);
 
             changingVolume = true;
+        }
+
+        public void _ToggleMute()
+        {
+            bool muted = VolumeSlider.value == VolumeSlider.minValue;
+
+            if (!muted) { originalVolume = VolumeSlider.value; }
+
+            VolumeSlider.value = muted ? originalVolume : VolumeSlider.minValue;
+
+            EndVolumeChange();
         }
 
         public void _Seek()
@@ -273,7 +345,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <returns>Formatted string from seconds in following format: M:SS</returns>
         private string GetFormattedTimeFromSeconds(float seconds)
         {
-            return TimeSpan.FromSeconds(seconds).ToString(@"m\:ss");
+            return TimeSpan.FromSeconds(seconds).ToString($@"{(seconds >= 3600f ? @"h\:m" : string.Empty)}m\:ss");
         }
 
         /// <summary>
@@ -407,6 +479,10 @@ namespace Varneon.UdonPrefabs.Essentials
 
             loadingTime = 0f;
 
+            LoadingIcon.gameObject.SetActive(false);
+
+            TextLoading.gameObject.SetActive(false);
+
             ResetLoadingProgressBar();
         }
 
@@ -456,6 +532,10 @@ namespace Varneon.UdonPrefabs.Essentials
 
             loadingTime = 0f;
 
+            LoadingIcon.gameObject.SetActive(true);
+
+            TextLoading.gameObject.SetActive(true);
+
             Log($"Loading song: [{nextSongIndex}] {Titles[nextSongIndex]} - {Artists[nextSongIndex]} ({Urls[nextSongIndex]})");
 
             player.PlayURL(Urls[index]);
@@ -466,11 +546,12 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void LoadAndPlayNextSong()
         {
-            if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
+            if (shufflePlaylist) { LoadAndPlayAnyRandomSong(); return; }
+            else if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
 
             if (currentSongIndex >= GetLastPlaylistSongIndex(currentSongPlaylistIndex)) 
             {
-                if (Loop)
+                if (Repeat)
                 {
                     LoadAndPlaySong(PlaylistIndices[currentSongPlaylistIndex]);
 
@@ -492,13 +573,26 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void LoadAndPlayPreviousSong()
         {
-            if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
+            if (shufflePlaylist) { LoadAndPlayAnyRandomSong(); return; }
+            else if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
 
             if (currentSongIndex <= PlaylistIndices[currentSongPlaylistIndex]) { Log("Current song is first on the list, can't play previous song"); return; }
 
             Log("Loading previous song...");
 
             LoadAndPlaySong(currentSongIndex - 1);
+        }
+
+        /// <summary>
+        /// Load any random song from any one of the playlists and play it automatically
+        /// </summary>
+        private int LoadAndPlayAnyRandomSong()
+        {
+            int randomSongIndex = UnityEngine.Random.Range(0, Urls.Length - 1);
+
+            LoadAndPlaySong(randomSongIndex);
+
+            return randomSongIndex;
         }
 
         /// <summary>
@@ -514,7 +608,8 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void AutoPlayNextOrRandom()
         {
-            if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
+            if(shufflePlaylist){ LoadAndPlayAnyRandomSong(); return; }
+            else if (Shuffle) { LoadAndPlayRandomSongOnList(); return; }
 
             LoadAndPlayNextSong();
         }
@@ -551,11 +646,23 @@ namespace Varneon.UdonPrefabs.Essentials
         }
 
         /// <summary>
+        /// Shows the speaker icon next to the playlist to indicate from which playlist the song is playing from
+        /// </summary>
+        /// <param name="enabled"></param>
+        private void UpdatePlayingPlaylistIcon(bool enabled)
+        {
+            if (currentSongPlaylistIndex >= 0 && currentSongPlaylistIndex != nextSongPlaylistIndex) { Playlists.GetChild(currentSongPlaylistIndex).GetChild(1).gameObject.SetActive(false); }
+            Playlists.GetChild(nextSongPlaylistIndex).GetChild(1).gameObject.SetActive(enabled);
+        }
+
+        /// <summary>
         /// Enable or disable the highlight on the active song list item
         /// </summary>
         /// <param name="highlighted"></param>
         private void HighlightSongListItem(bool highlighted)
         {
+            if(highlighted && selectedPlaylist != nextSongPlaylistIndex) { return; }
+
             Transform listItem = highlighted ? nextSongListItem : currentSongListItem;
 
             if (!Utilities.IsValid(listItem)) { return; }
@@ -587,6 +694,10 @@ namespace Varneon.UdonPrefabs.Essentials
             if (!loading) { return; }
 
             loadingTime += Time.deltaTime;
+
+            LoadingIcon.localEulerAngles = new Vector3(0f, 0f, -loadingTime * 360f);
+
+            TextLoading.color = Color.white * (0.75f + Mathf.Sin(loadingTime * 5f) * 0.25f);
 
             UpdateLoadingProgressBar();
 
@@ -658,6 +769,17 @@ namespace Varneon.UdonPrefabs.Essentials
         }
 
         /// <summary>
+        /// Updates the volume icon next to the volume slider based on the slider's value
+        /// </summary>
+        private void UpdateVolumeIcon()
+        {
+            for(int i = 0; i < volumeIcons.Length; i++)
+            {
+                volumeIcons[i].enabled = Mathf.CeilToInt((VolumeSlider.value - VolumeSlider.minValue) * (volumeIcons.Length - 1f)) == i;
+            }
+        }
+
+        /// <summary>
         /// Resets volume slider to its original state
         /// </summary>
         private void EndVolumeChange()
@@ -700,11 +822,15 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             Log(nameof(OnVideoEnd));
 
+            TimeProgressBar.fillRect.gameObject.SetActive(false);
+
             UpdatePlayPauseButton(false);
 
             ResetSongInfo();
 
             if (loading) { return; }
+
+            if (repeatOne) { player.SetTime(0f); player.Play(); return; }
 
             HighlightSongListItem(false);
 
@@ -714,6 +840,8 @@ namespace Varneon.UdonPrefabs.Essentials
         public override void OnVideoStart() 
         {
             Log(nameof(OnVideoStart));
+
+            TimeProgressBar.fillRect.gameObject.SetActive(true);
 
             UpdatePlayPauseButton(true);
 
@@ -725,7 +853,12 @@ namespace Varneon.UdonPrefabs.Essentials
 
             TimeLength.text = GetFormattedTimeFromSeconds(songDuration);
 
+            UpdatePlayingPlaylistIcon(true);
+
             SetNextSongAsCurrent();
+
+            //Placeholder for upcoming hud
+            //if (HUD) { HUD._ShowTunifyNotification(TextTitle.text, TextArtist.text); }
         }
 
         public override void OnVideoReady()
@@ -743,7 +876,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             SetNextSongAsCurrent();
 
-            HighlightSongListItem(false);
+            if (!player.IsPlaying) { HighlightSongListItem(false); }
 
             ResetSongInfo();
 
@@ -793,6 +926,8 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             DrawBanner();
 
+            if (tunify.transform.localScale.normalized != Vector3.one.normalized || tunify.transform.GetChild(0).localScale.normalized != Vector3.one.normalized) { DrawScaleWarning(); }
+
             EditorGUILayout.Space();
 
             base.OnInspectorGUI();
@@ -824,6 +959,19 @@ namespace Varneon.UdonPrefabs.Essentials
             GUILayout.BeginHorizontal(EditorStyles.helpBox);
 
             GUILayout.Label($"[Library] Songs: {tunify.Urls.Length} | Playlists: {tunify.PlaylistIndices.Length}");
+
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawScaleWarning()
+        {
+            GUI.color = Color.yellow;
+
+            GUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+            GUI.color = Color.white;
+
+            GUILayout.Label("Scale of the root prefab or the Canvas is not even! If you want to resize the music player, please adjust the scale on each axis evenly or adjust the Width and Height on the Canvas RectTransform.", EditorStyles.wordWrappedLabel);
 
             GUILayout.EndHorizontal();
         }
