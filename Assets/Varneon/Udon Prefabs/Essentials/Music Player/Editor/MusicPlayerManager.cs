@@ -761,12 +761,14 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
         #region Player Actions
         private void ApplyPlaylistsToPlayer()
         {
+            /*
             if (PrefabUtility.GetNearestPrefabInstanceRoot(player) != null)
             {
                 if (!EditorUtility.DisplayDialog("Unpack prefab for playlist update?", "The player prefab has to be unpacked before changing the playlist data.\n\nContinue?", "OK", "Cancel")) { return; }
 
                 PrefabUtility.UnpackPrefabInstance(PrefabUtility.GetNearestPrefabInstanceRoot(player), PrefabUnpackMode.Completely, InteractionMode.UserAction);
             }
+            */
 
             List<VRCUrl> urls = new List<VRCUrl>();
             List<string> titles = new List<string>();
@@ -803,6 +805,8 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             player.PlaylistNames = playlistNames.ToArray();
 
             player.ApplyProxyModifications();
+
+            Undo.PerformRedo(); //Hacky workaround to apply variables to UdonBehaviours on prefabs
 
             RefreshPlayerStats();
         }
