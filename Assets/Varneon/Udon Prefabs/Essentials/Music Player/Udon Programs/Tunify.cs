@@ -62,10 +62,10 @@ namespace Varneon.UdonPrefabs.Essentials
         private RectTransform LoadingIcon, VolumeIcons;
 
         [SerializeField]
-        private Button ButtonPlay, ButtonPause, ButtonShuffle, ButtonShufflePlaylist, ButtonRepeat, ButtonRepeatOne;
+        private Button ButtonPlay, ButtonPause, ButtonNext, ButtonPrev, ButtonShuffle, ButtonShufflePlaylist, ButtonRepeat, ButtonRepeatOne;
 
         [SerializeField]
-        private Slider TimeProgressBar, VolumeSlider, SeekSlider;
+        private Slider TimeProgressBar, VolumeSlider;
 
         [Space]
         [Header("Debug")]
@@ -101,7 +101,7 @@ namespace Varneon.UdonPrefabs.Essentials
         
         private int nextSongIndex = -1, nextSongPlaylistIndex = -1;
 
-        private bool loading, seeking, changingVolume;
+        private bool loading, seeking;
 
         private float loadingTime, averageLoadingTime = 5f;
 
@@ -145,8 +145,6 @@ namespace Varneon.UdonPrefabs.Essentials
             SetButtonHighlight(ButtonShufflePlaylist, true);
 
             _UpdateVolume();
-
-            EndVolumeChange(); 
         }
 
         private void Update()
@@ -275,14 +273,16 @@ namespace Varneon.UdonPrefabs.Essentials
             }
 
             UpdateVolumeIcon();
+        }
 
-            if (changingVolume) { return; }
-
+        public void _BeginVolumeChange()
+        {
             SetSliderHighlight(VolumeSlider, true);
+        }
 
-            VolumeSlider.handleRect.gameObject.SetActive(true);
-
-            changingVolume = true;
+        public void _EndVolumeChange()
+        {
+            SetSliderHighlight(VolumeSlider, false);
         }
 
         public void _ToggleMute()
@@ -292,15 +292,18 @@ namespace Varneon.UdonPrefabs.Essentials
             if (!muted) { originalVolume = VolumeSlider.value; }
 
             VolumeSlider.value = muted ? originalVolume : VolumeSlider.minValue;
-
-            EndVolumeChange();
         }
 
-        public void _Seek()
+        public void _BeginSeek()
         {
-            if (seeking) { return; }
+            SetSliderHighlight(TimeProgressBar, seeking = true);
+        }
 
-            SetSeekingActive(true);
+        public void _EndSeek()
+        {
+            player.SetTime(TimeProgressBar.value * songDuration);
+
+            SetSliderHighlight(TimeProgressBar, seeking = false);
         }
         #endregion
 
@@ -453,7 +456,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             if (!player.IsPlaying && !seeking) { return; }
 
-            float timeElapsed = seeking ? SeekSlider.value * songDuration : player.GetTime();
+            float timeElapsed = seeking ? TimeProgressBar.value * songDuration : player.GetTime();
 
             TimeElapsed.text = GetFormattedTimeFromSeconds(timeElapsed);
 
@@ -535,6 +538,8 @@ namespace Varneon.UdonPrefabs.Essentials
             LoadingIcon.gameObject.SetActive(true);
 
             TextLoading.gameObject.SetActive(true);
+
+            SetNavigationButtonsInteractable(false);
 
             Log($"Loading song: [{nextSongIndex}] {Titles[nextSongIndex]} - {Artists[nextSongIndex]} ({Urls[nextSongIndex]})");
 
@@ -734,6 +739,11 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void SetNextSongAsCurrent()
         {
+            if (currentSongIndex == nextSongIndex) { return; }
+
+            //Placeholder for upcoming hud
+            //if (HUD) { HUD._ShowTunifyNotification(TextTitle.text, TextArtist.text); }
+
             currentSongPlaylistIndex = nextSongPlaylistIndex;
 
             currentSongIndex = nextSongIndex;
@@ -754,8 +764,6 @@ namespace Varneon.UdonPrefabs.Essentials
             SetSliderHighlight(TimeProgressBar, active);
 
             seeking = active;
-
-            SeekSlider.handleRect.gameObject.SetActive(active);
         }
 
         /// <summary>
@@ -766,6 +774,27 @@ namespace Varneon.UdonPrefabs.Essentials
         private void SetSliderHighlight(Slider slider, bool highlight)
         {
             slider.fillRect.GetComponent<Image>().color = highlight ? HighlightColor : Color.white;
+            slider.handleRect.gameObject.SetActive(highlight);
+        }
+
+        /// <summary>
+        /// Sets the interactable state on song navigation buttons
+        /// </summary>
+        /// <param name="interactable"></param>
+        private void SetNavigationButtonsInteractable(bool interactable)
+        {
+            ButtonNext.interactable = interactable;
+            ButtonPrev.interactable = interactable;
+        }
+
+        /// <summary>
+        /// Sets the interactable state on play and pause buttons
+        /// </summary>
+        /// <param name="interactable"></param>
+        private void SetPlayPauseButtonsInteractable(bool interactable)
+        {
+            ButtonPlay.interactable = interactable;
+            ButtonPause.interactable = interactable;
         }
 
         /// <summary>
@@ -777,32 +806,6 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 volumeIcons[i].enabled = Mathf.CeilToInt((VolumeSlider.value - VolumeSlider.minValue) * (volumeIcons.Length - 1f)) == i;
             }
-        }
-
-        /// <summary>
-        /// Resets volume slider to its original state
-        /// </summary>
-        private void EndVolumeChange()
-        {
-            if (!changingVolume) { return; }
-
-            SetSliderHighlight(VolumeSlider, false);
-
-            VolumeSlider.handleRect.gameObject.SetActive(false);
-
-            changingVolume = false;
-        }
-
-        /// <summary>
-        /// Resets the seek slider to its original state
-        /// </summary>
-        private void EndSeek()
-        {
-            if (!seeking) { return; }
-
-            player.SetTime(SeekSlider.value * songDuration);
-
-            SetSeekingActive(false);
         }
 
         /// <summary>
@@ -856,9 +859,6 @@ namespace Varneon.UdonPrefabs.Essentials
             UpdatePlayingPlaylistIcon(true);
 
             SetNextSongAsCurrent();
-
-            //Placeholder for upcoming hud
-            //if (HUD) { HUD._ShowTunifyNotification(TextTitle.text, TextArtist.text); }
         }
 
         public override void OnVideoReady()
@@ -866,6 +866,10 @@ namespace Varneon.UdonPrefabs.Essentials
             Log(nameof(OnVideoReady));
 
             averageLoadingTime = (averageLoadingTime + loadingTime) / 2f;
+
+            SetPlayPauseButtonsInteractable(true);
+
+            SetNavigationButtonsInteractable(true);
 
             FinishLoading();
         }
@@ -883,17 +887,6 @@ namespace Varneon.UdonPrefabs.Essentials
             FinishLoading();
 
             ShowError(videoError.ToString());
-        }
-        #endregion
-
-        #region VRC Override Methods
-        public override void InputUse(bool value, UdonInputEventArgs args)
-        {
-            if (value) { return; }
-
-            EndSeek();
-
-            EndVolumeChange();
         }
         #endregion
     }
