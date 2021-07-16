@@ -14,11 +14,13 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
         {
             public string Name;
             public List<Song> Songs;
+            public string Args;
 
-            public Playlist(string name, List<Song> songs = null)
+            public Playlist(string name, List<Song> songs = null, string args = null)
             {
                 Name = name;
                 Songs = songs ?? new List<Song>();
+                Args = args;
             }
         }
 

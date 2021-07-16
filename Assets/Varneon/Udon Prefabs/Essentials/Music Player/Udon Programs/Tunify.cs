@@ -93,6 +93,9 @@ namespace Varneon.UdonPrefabs.Essentials
         [HideInInspector]
         public string[] PlaylistNames = new string[0];
 
+        [HideInInspector]
+        public string[] PlaylistArgs = new string[0];
+
         private int selectedPlaylist;
 
         private int playlistStartIndex, playlistEndIndex;
