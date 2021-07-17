@@ -25,7 +25,7 @@ MonoBehaviour:
     SerializedFormat: 2
     SerializedBytes: 
     ReferencedUnityObjects:
-    - {fileID: 11500000, guid: 56fa5de7efdbad74f818037c7ca009ac, type: 3}
+    - {fileID: 11500000, guid: 012e2595e4f197f4eabebc79c75baac7, type: 3}
     SerializedBytesString: 
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
@@ -1724,7 +1724,7 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: Debugger
+      Data: Console
     - Name: $v
       Entry: 7
       Data: 96|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
@@ -1736,7 +1736,7 @@ MonoBehaviour:
       Data: 98|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: Varneon.UdonPrefabs.RuntimeTools.UdonDebugger, Assembly-CSharp
+      Data: Varneon.UdonPrefabs.RuntimeTools.UdonConsole, Assembly-CSharp
     - Name: 
       Entry: 8
       Data: 
@@ -1751,10 +1751,10 @@ MonoBehaviour:
       Data: VRCUdonUdonBehaviour
     - Name: symbolOriginalName
       Entry: 1
-      Data: Debugger
+      Data: Console
     - Name: symbolUniqueName
       Entry: 1
-      Data: Debugger
+      Data: Console
     - Name: symbolDefaultValue
       Entry: 6
       Data: 

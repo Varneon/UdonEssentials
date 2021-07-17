@@ -502,7 +502,7 @@ PrefabInstance:
     - target: {fileID: 6759095419728963412, guid: 8894fa7e4588a5c4fab98453e558847d,
         type: 3}
       propertyPath: DynamicMaterials.Array.size
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6759095419728963412, guid: 8894fa7e4588a5c4fab98453e558847d,
         type: 3}
@@ -597,7 +597,7 @@ PrefabInstance:
     - target: {fileID: 578640412118179445, guid: d8600aa2531413b4f91c3b221ae5ce0d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.16
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 578640412118179445, guid: d8600aa2531413b4f91c3b221ae5ce0d,
         type: 3}

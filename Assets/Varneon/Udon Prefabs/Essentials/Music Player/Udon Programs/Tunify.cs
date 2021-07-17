@@ -71,7 +71,7 @@ namespace Varneon.UdonPrefabs.Essentials
         [Space]
         [Header("Debug")]
         [SerializeField]
-        private UdonDebugger Debugger;
+        private UdonConsole Console;
         #endregion
 
         #region Private Variables
@@ -818,9 +818,20 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="text"></param>
         private void Log(string text)
         {
-            if (Debugger) { Debugger.WriteLine($"{LogPrefix} {text}"); }
+            if (Console) { Console._Log($"{LogPrefix} {text}"); }
 
             Debug.Log($"{LogPrefix} {text}");
+        }
+
+        /// <summary>
+        /// Proxy for printing errors in logs
+        /// </summary>
+        /// <param name="text"></param>
+        private void LogError(string text)
+        {
+            if (Console) { Console._LogError($"{LogPrefix} {text}"); }
+
+            Debug.LogError($"{LogPrefix} {text}");
         }
         #endregion
 
@@ -880,7 +891,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
         public override void OnVideoError(VideoError videoError)
         {
-            Log($"<color=#990000>{nameof(OnVideoError)}</color> {videoError}");
+            LogError($"<color=#990000>{nameof(OnVideoError)}:</color> {videoError}");
 
             SetNextSongAsCurrent();
 
