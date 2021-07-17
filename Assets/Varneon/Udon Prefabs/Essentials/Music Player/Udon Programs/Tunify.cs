@@ -19,6 +19,7 @@ using VRC.Udon;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
+    [UdonBehaviourSyncMode(BehaviourSyncMode.NoVariableSync)]
     [RequireComponent(typeof(VRCUnityVideoPlayer))] //AVPro support coming soon
     public class Tunify : UdonSharpBehaviour
     {

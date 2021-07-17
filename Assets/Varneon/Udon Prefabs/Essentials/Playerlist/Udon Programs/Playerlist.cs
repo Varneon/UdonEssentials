@@ -8,6 +8,7 @@ using VRC.SDKBase;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
+    [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
     public class Playerlist : UdonSharpBehaviour
     {
         #region Serialized Fields
@@ -40,7 +41,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
         #region Private Variables
 
-        [UdonSynced] private long instanceStartTime = 0; // This will be optimized after the new Udon networking update
+        [UdonSynced] private long instanceStartTime = 0;
         private long utcNow;
         private long localJoinTime = 0;
         private VRCPlayerApi localPlayer;
