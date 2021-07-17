@@ -185,7 +185,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
             GUILayout.FlexibleSpace();
 
-            DrawFieldPlaylistActions();
+            DrawFieldLibraryActions();
 
             EditorGUI.EndDisabledGroup();
 
@@ -453,7 +453,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawFieldPlaylistActions()
+        private void DrawFieldLibraryActions()
         {
             GUILayout.BeginHorizontal(EditorStyles.helpBox);
 
