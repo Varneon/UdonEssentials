@@ -171,9 +171,16 @@ namespace Varneon.UdonPrefabs.Essentials
                 }
                 else
                 {
-                    selectedPlaylist = nextSongPlaylistIndex = 0;
-                    if (Shuffle) { LoadAndPlayRandomSongOnList(nextSongPlaylistIndex); }
-                    else { LoadAndPlaySong(0); }
+                    if(CopyrightFreePlaylistIndices.Length > 0 && CopyrightFreePlaylistIndices[0] == 0)
+                    {
+                        selectedPlaylist = nextSongPlaylistIndex = 0;
+                        if (Shuffle || ShufflePlaylist) { LoadAndPlayRandomSongOnList(nextSongPlaylistIndex); }
+                        else { LoadAndPlaySong(0); }
+                    }
+                    else
+                    {
+                        ShowPromptNoCopyrightFreeSongs();
+                    }
                 }
 
                 UpdateSongList();
@@ -698,10 +705,8 @@ namespace Varneon.UdonPrefabs.Essentials
             else if(DisableCopyrightedAutoplay)
             {
                 if(CopyrightFreePlaylistIndices.Length == 0) 
-                { 
-                    LogWarning("Couldn't find any copyright free playlists in the library, try allowing playback of copyrighted content");
-
-                    ShowError("Couldn't find copyright free playlists in the library");
+                {
+                    ShowPromptNoCopyrightFreeSongs();
 
                     return; 
                 }
@@ -796,6 +801,16 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 text.color = color;
             }
+        }
+
+        /// <summary>
+        /// Show prompt and error indicating that no copyright free songs could be found in the library
+        /// </summary>
+        private void ShowPromptNoCopyrightFreeSongs()
+        {
+            LogWarning("Couldn't find any copyright free playlists in the library, try allowing playback of copyrighted content");
+
+            ShowError("Couldn't find copyright free playlists in the library");
         }
 
         /// <summary>
