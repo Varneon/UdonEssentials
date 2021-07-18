@@ -161,6 +161,7 @@ namespace Varneon.UdonPrefabs.Essentials
             UpdateSongList();
 
             if (!Shuffle) { ShufflePlaylist = false; }
+            else if (ShufflePlaylist) { Shuffle = false; SetShuffleButtonMode(true); }
 
             if (PlayOnStart)
             {
@@ -271,16 +272,14 @@ namespace Varneon.UdonPrefabs.Essentials
 
             ShufflePlaylist = true;
 
-            ButtonShufflePlaylist.gameObject.SetActive(true);
-            ButtonShuffle.gameObject.SetActive(false);
+            SetShuffleButtonMode(true);
         }
 
         public void _ToggleShufflePlaylist()
         {
             ShufflePlaylist = false;
 
-            ButtonShuffle.gameObject.SetActive(true);
-            ButtonShufflePlaylist.gameObject.SetActive(false);
+            SetShuffleButtonMode(false);
         }
 
         public void _ToggleRepeat()
@@ -853,6 +852,16 @@ namespace Varneon.UdonPrefabs.Essentials
             ButtonPlay.gameObject.SetActive(!isPlaying);
 
             ButtonPause.gameObject.SetActive(isPlaying);
+        }
+
+        /// <summary>
+        /// Sets shuffle button to either standard shuffle or playlist shuffle
+        /// </summary>
+        /// <param name="mode"></param>
+        private void SetShuffleButtonMode(bool playlistShuffle)
+        {
+            ButtonShufflePlaylist.gameObject.SetActive(playlistShuffle);
+            ButtonShuffle.gameObject.SetActive(!playlistShuffle);
         }
 
         /// <summary>
