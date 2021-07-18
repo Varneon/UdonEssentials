@@ -15,12 +15,14 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             public string Name;
             public List<Song> Songs;
             public string Args;
+            public string Description;
 
-            public Playlist(string name, List<Song> songs = null, string args = null)
+            public Playlist(string name, List<Song> songs = null, string args = "-a -c", string description = "")
             {
                 Name = name;
                 Songs = songs ?? new List<Song>();
                 Args = args;
+                Description = description;
             }
         }
 
@@ -30,14 +32,14 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             public string Name;
             public string Artist;
             public string URL;
-            public string Description;
+            public string Tags;
 
-            public Song(string name, string artist, string url, string description = "")
+            public Song(string name, string artist, string url, string tags = null)
             {
                 Name = name;
                 Artist = artist;
                 URL = url;
-                Description = description;
+                Tags = tags;
             }
         }
     }

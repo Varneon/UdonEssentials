@@ -43,15 +43,23 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private Playlist tempPlaylist;
 
-        private string newPlaylistName;
+        private string newPlaylistName, playlistDescription;
 
         private bool creatingNewPlaylist, renamingPlaylist, pendingChanges;
+
+        private PlaylistArguments playlistArguments = new PlaylistArguments();
 
         private UdonSharpProgramAsset playerProgram;
 
         private static readonly string LibraryPath = "Assets/Varneon/Udon Prefabs/Essentials/Music Player/Music Library/";
 
         private static readonly string LogPrefix = "[<color=#000099>Music Player Manager</color>]:";
+
+        private struct PlaylistArguments
+        {
+            public bool UseAutoplay;
+            public bool IsCopyrighted;
+        }
 
         [MenuItem("Varneon/Udon Prefab Editors/Music Player Manager")]
         public static void Init()
@@ -87,7 +95,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
             playlistList.onSelectCallback = (ReorderableList l) =>
             {
-                GetSongsFromPlaylist(playlistList.index);
+                LoadPlaylistFromLibrary(playlistList.index);
             };
 
             playlistList.onReorderCallback = (ReorderableList l) =>
@@ -104,22 +112,27 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 rect.y += 2;
 
                 EditorGUI.PropertyField(
-                    new Rect(rect.x, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("Name"), GUIContent.none);
 
                 EditorGUI.PropertyField(
-                    new Rect(rect.x + rect.width / 3f, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x + rect.width / 4f, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("Artist"), GUIContent.none);
 
                 EditorGUI.PropertyField(
-                    new Rect(rect.x + (rect.width / 3f) * 2, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x + (rect.width / 4f) * 2, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("URL"), GUIContent.none);
+
+                EditorGUI.PropertyField(
+                    new Rect(rect.x + (rect.width / 4f) * 3, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
+                    element.FindPropertyRelative("Tags"), GUIContent.none);
             };
 
             songList.drawHeaderCallback = (Rect rect) => {
-                EditorGUI.LabelField(new Rect(rect.x + 15, rect.y, rect.width / 3f, rect.height), "Title");
-                EditorGUI.LabelField(new Rect(rect.x + 10 + rect.width / 3f, rect.y, rect.width / 3f, rect.height), "Artist");
-                EditorGUI.LabelField(new Rect(rect.x + 5 + rect.width / 1.5f, rect.y, rect.width / 3f, rect.height), "URL");
+                EditorGUI.LabelField(new Rect(rect.x + 15, rect.y, rect.width / 4f, rect.height), "Title");
+                EditorGUI.LabelField(new Rect(rect.x + 10 + rect.width / 4f, rect.y, rect.width / 4f, rect.height), "Artist");
+                EditorGUI.LabelField(new Rect(rect.x + 5 + rect.width / 4f * 2, rect.y, rect.width / 4f, rect.height), "URL");
+                EditorGUI.LabelField(new Rect(rect.x + 5 + rect.width / 4f * 3, rect.y, rect.width / 4f, rect.height), "Tags");
             };
 
             songList.onReorderCallback = (ReorderableList l) =>
@@ -180,6 +193,8 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
 
             GUILayout.EndHorizontal();
+
+            DrawFieldPlaylistArguments();
 
             DrawFieldSonglist();
 
@@ -427,6 +442,47 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             GUILayout.EndVertical();
         }
 
+        private void DrawFieldPlaylistArguments()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+
+            EditorGUI.BeginChangeCheck();
+
+            playlistArguments.UseAutoplay = GUILayout.Toggle(playlistArguments.UseAutoplay, new GUIContent("Autoplay", "Can this playlist be played automatically at the beginning of the instance or randomly selected while playlist shuffle is active"), GUILayout.ExpandWidth(false));
+
+            playlistArguments.IsCopyrighted = GUILayout.Toggle(playlistArguments.IsCopyrighted, new GUIContent("Copyrighted", "Does this playlist contain copyrighted content that could potentially lead to issues in e.g. livestreams or videos"), GUILayout.ExpandWidth(false));
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                Playlist playlist = Playlists[playlistList.index];
+
+                playlist.Args = GeneratePlaylistArgumentString(playlistArguments);
+
+                Playlists[playlistList.index] = playlist;
+
+                pendingChanges = true;
+            }
+
+            GUILayout.Label(new GUIContent("Description:", "Playlist description"), GUILayout.Width(72));
+
+            EditorGUI.BeginChangeCheck();
+
+            playlistDescription = GUILayout.TextField(playlistDescription);
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                Playlist playlist = Playlists[playlistList.index];
+
+                playlist.Description = playlistDescription;
+
+                Playlists[playlistList.index] = playlist;
+
+                pendingChanges = true;
+            }
+
+            EditorGUILayout.EndHorizontal();
+        }
+
         private void DrawFieldSonglist()
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
@@ -643,7 +699,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 Playlists.Add(playlist);
             }
 
-            GetSongsFromPlaylist(playlistList.index = 0);
+            LoadPlaylistFromLibrary(playlistList.index = 0);
 
             playlistList.index = playlistList.index;
         }
@@ -692,14 +748,50 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             Debug.Log($"{LogPrefix} Music Library Saved Successfully!");
         }
 
-        private void GetSongsFromPlaylist(int playlistIndex)
+        private void LoadPlaylistFromLibrary(int playlistIndex)
         {
+            playlistDescription = Playlists[playlistIndex].Description;
+
+            playlistArguments = ParsePlaylistArguments(Playlists[playlistIndex].Args);
+
             Songs.Clear();
 
             foreach (Song song in Playlists[playlistIndex].Songs)
             {
                 Songs.Add(song);
             }
+        }
+
+        private PlaylistArguments ParsePlaylistArguments(string args)
+        {
+            PlaylistArguments newPlaylistArguments = new PlaylistArguments();
+
+            if (string.IsNullOrEmpty(args)) { return newPlaylistArguments; }
+
+            foreach(string arg in args.Split(' '))
+            {
+                switch (arg.TrimStart('-')[0])
+                {
+                    case 'a':
+                        newPlaylistArguments.UseAutoplay = true;
+                        break;
+                    case 'c':
+                        newPlaylistArguments.IsCopyrighted = true;
+                        break;
+                }
+            }
+
+            return newPlaylistArguments;
+        }
+
+        private string GeneratePlaylistArgumentString(PlaylistArguments args)
+        {
+            List<string> output = new List<string>();
+
+            if (args.UseAutoplay) { output.Add("-a");  }
+            if (args.IsCopyrighted) { output.Add("-c");  }
+
+            return string.Join(" ", output.ToArray());
         }
 
         private void WriteSongsToPlaylist(int playlistIndex)
@@ -711,7 +803,11 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 newSongList.Add(song);
             }
 
-            Playlists[playlistIndex] = new Playlist(Playlists[playlistIndex].Name, newSongList);
+            Playlist playlist = Playlists[playerIndex];
+
+            playlist.Songs = newSongList;
+
+            Playlists[playlistIndex] = playlist;
         }
 
         private void RemovePlaylist()
@@ -720,7 +816,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             {
                 Playlists.RemoveAt(playlistList.index);
 
-                GetSongsFromPlaylist(playlistList.index = 0);
+                LoadPlaylistFromLibrary(playlistList.index = 0);
             }
         }
 
@@ -770,19 +866,34 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             }
             */
 
+            List<int> autoplayPlaylistIndices = new List<int>();
+            List<int> copyrightFreePlaylistIndices = new List<int>();
+            List<int> autoplayCopyrightFreePlaylistIndices = new List<int>();
+
             List<VRCUrl> urls = new List<VRCUrl>();
             List<string> titles = new List<string>();
             List<string> artists = new List<string>();
+            List<string> tags = new List<string>();
             List<int> playlistIndices = new List<int>();
             List<string> playlistNames = new List<string>();
+            List<string> playlistArgs = new List<string>();
+            List<string> playlistDescriptions = new List<string>();
 
             int currentSongIndex = 0;
 
             foreach (Playlist playlist in activeLibrary.Playlists)
             {
+                if (playlist.Args.Contains("-a")) { autoplayPlaylistIndices.Add(playlistIndices.Count); }
+
+                if (!playlist.Args.Contains("-c")) { copyrightFreePlaylistIndices.Add(playlistIndices.Count); }
+
                 playlistNames.Add(playlist.Name);
 
                 playlistIndices.Add(currentSongIndex);
+
+                playlistArgs.Add(playlist.Args);
+
+                playlistDescriptions.Add(playlist.Description);
 
                 currentSongIndex += playlist.Songs.Count;
 
@@ -793,7 +904,14 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                     titles.Add(song.Name);
 
                     artists.Add(song.Artist);
+
+                    tags.Add(song.Tags ?? string.Empty);
                 }
+            }
+
+            foreach(int index in autoplayPlaylistIndices)
+            {
+                if (copyrightFreePlaylistIndices.Contains(index)) { autoplayCopyrightFreePlaylistIndices.Add(index); }
             }
 
             Undo.RecordObject(player.GetComponent<UdonBehaviour>(), "Apply music library to player");
@@ -801,8 +919,14 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             player.Urls = urls.ToArray();
             player.Titles = titles.ToArray();
             player.Artists = artists.ToArray();
+            player.Tags = tags.ToArray();
             player.PlaylistIndices = playlistIndices.ToArray();
             player.PlaylistNames = playlistNames.ToArray();
+            player.PlaylistArgs = playlistArgs.ToArray();
+            player.PlaylistDescriptions = playlistDescriptions.ToArray();
+            player.AutoplayPlaylistIndices = autoplayPlaylistIndices.ToArray();
+            player.CopyrightFreePlaylistIndices = copyrightFreePlaylistIndices.ToArray();
+            player.AutoplayCopyrightFreePlaylistIndices = autoplayCopyrightFreePlaylistIndices.ToArray();
 
             player.ApplyProxyModifications();
 

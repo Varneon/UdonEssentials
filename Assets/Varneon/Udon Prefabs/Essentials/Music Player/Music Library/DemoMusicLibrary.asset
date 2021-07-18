@@ -18,12 +18,14 @@ MonoBehaviour:
     - Name: Down
       Artist: Tiscore, Stefy De Cicco
       URL: https://www.youtube.com/watch?v=66an5-5AAnc
-      Description: 
+      Tags: You can define tags for songs
     - Name: Love With Your Life
       Artist: Hollyn
       URL: https://www.youtube.com/watch?v=XfVetZeaxuc
-      Description: 
+      Tags: Maybe describing the song's mood
     - Name: Backseat Driver ft. Hollyn, Tru
       Artist: TobyMac
       URL: https://www.youtube.com/watch?v=kME_Q5V82Us
-      Description: 
+      Tags: Or genre
+    Args: -a -c
+    Description: Demo playlist for the music player
