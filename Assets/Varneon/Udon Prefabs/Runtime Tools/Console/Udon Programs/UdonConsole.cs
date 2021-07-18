@@ -43,10 +43,13 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
         private Scrollbar scrollbar;
 
+        private RectTransform canvasRoot;
+
         private void Start()
         {
             ToggleTimestamps.isOn = !ShowTimestamps;
             scrollbar = GetComponentInChildren<Scrollbar>();
+            canvasRoot = GetComponentInChildren<Canvas>().GetComponent<RectTransform>();
             _Log($"{LOG_PREFIX} This is Varneon's Udon Essentials Console!");
             _LogWarning($"{LOG_PREFIX} It can show warnings if something is out of the ordinary");
             _LogError($"{LOG_PREFIX} And errors can also be shown if something goes completely wrong");
@@ -168,6 +171,16 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
             SetLogEntryActive(newEntryGO, type);
 
+            LayoutRebuilder.ForceRebuildLayoutImmediate(canvasRoot);
+
+            SendCustomEventDelayedFrames(nameof(_ScrollToBottom), 3);
+        }
+
+        /// <summary>
+        /// Scrolls to the bottom of the window
+        /// </summary>
+        public void _ScrollToBottom()
+        {
             scrollbar.value = 0f;
         }
 
