@@ -8,6 +8,7 @@ List of the prefabs:
 | ------------- |:-------------:| -----:|
 | Playerlist | List that shows all players in the instance, player count, player join times, instance lifetime and master | Drag & Drop |
 | Music Player | Music player that allows world creators to create playlists for their worlds for everyone to listen to | Beginner |
+| Console | In-game console for showing custom logs in realtime while inside the world | Intermediate |
 
 ## How to use:
 ### Prerequisites:
