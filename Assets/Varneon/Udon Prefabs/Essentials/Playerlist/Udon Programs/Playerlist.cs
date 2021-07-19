@@ -48,6 +48,14 @@ namespace Varneon.UdonPrefabs.Essentials
         private VRCPlayerApi[] players;
         private int playerCount;
         private float updateTimer = 0f;
+        private const int
+            INDEX_ID = 1,
+            INDEX_VR = 4,
+            INDEX_GROUP1 = 5,
+            INDEX_GROUP2 = 6,
+            INDEX_TEXT_ID = 0,
+            INDEX_TEXT_NAME = 1,
+            INDEX_TEXT_TIME = 2;
 
         #endregion
 
@@ -68,9 +76,9 @@ namespace Varneon.UdonPrefabs.Essentials
                 RequestSerialization();
             }
 
-            PlayerListItem.transform.GetChild(5).GetComponent<Image>().sprite = Group1Icon;
+            PlayerListItem.transform.GetChild(INDEX_GROUP1).GetComponent<Image>().sprite = Group1Icon;
 
-            PlayerListItem.transform.GetChild(6).GetComponent<Image>().sprite = Group2Icon;
+            PlayerListItem.transform.GetChild(INDEX_GROUP2).GetComponent<Image>().sprite = Group2Icon;
         }
 
         private void Update()
@@ -126,15 +134,17 @@ namespace Varneon.UdonPrefabs.Essentials
             t.localEulerAngles = new Vector3();
             t.localScale = new Vector3(1, 1, 1);
 
-            t.GetChild(1).GetComponent<Text>().text = player.playerId.ToString();
-            t.GetChild(2).GetComponent<Text>().text = player.displayName;
-            t.GetChild(3).GetComponent<Text>().text = (player.playerId < localPlayer.playerId) ? "Joined before you" : DateTime.UtcNow.ToLocalTime().ToString("dd MMMM yyyy hh:mm:ss");
+            Text[] texts = t.GetComponentsInChildren<Text>();
 
-            if (player.IsUserInVR()) { t.GetChild(4).gameObject.SetActive(true); }
+            texts[INDEX_TEXT_ID].text = player.playerId.ToString();
+            texts[INDEX_TEXT_NAME].text = player.displayName;
+            texts[INDEX_TEXT_TIME].text = (player.playerId < localPlayer.playerId) ? "Joined before you" : DateTime.UtcNow.ToLocalTime().ToString("dd MMMM yyyy hh:mm:ss");
 
-            if (IsNameInGroup(player.displayName, Group1Names)) { t.GetChild(5).gameObject.SetActive(true); }
+            if (player.IsUserInVR()) { t.GetChild(INDEX_VR).gameObject.SetActive(true); }
 
-            if (IsNameInGroup(player.displayName, Group2Names)) { t.GetChild(6).gameObject.SetActive(true); }
+            if (IsNameInGroup(player.displayName, Group1Names)) { t.GetChild(INDEX_GROUP1).gameObject.SetActive(true); }
+
+            if (IsNameInGroup(player.displayName, Group2Names)) { t.GetChild(INDEX_GROUP2).gameObject.SetActive(true); }
         }
 
         private void RemovePlayer(int id)
@@ -143,7 +153,7 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 Transform item = PlayerList.GetChild(i);
 
-                if(Convert.ToInt32(item.GetChild(1).GetComponent<Text>().text) == id)
+                if(Convert.ToInt32(item.GetChild(INDEX_ID).GetComponent<Text>().text) == id)
                 {
                     Destroy(item.gameObject);
 
