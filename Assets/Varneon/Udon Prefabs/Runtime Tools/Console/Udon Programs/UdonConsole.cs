@@ -23,6 +23,9 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         [SerializeField]
         private int MaxLogEntries = 100;
 
+        [SerializeField, Range(8, 32)]
+        private int FontSize = 24;
+
         [Space]
         [Header("References")]
         [SerializeField]
@@ -35,7 +38,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         private Toggle ToggleLog, ToggleWarning, ToggleError, ToggleTimestamps;
 
         [SerializeField]
-        private InputField MaxLogEntriesField;
+        private InputField MaxLogEntriesField, FontSizeField;
 
         private const string LOG_PREFIX = "[<color=#00FFFF>UdonConsole</color>]: ";
 
@@ -47,6 +50,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
         private void Start()
         {
+            LogItem.GetComponentInChildren<Text>().fontSize = FontSize;
             ToggleTimestamps.isOn = !ShowTimestamps;
             scrollbar = GetComponentInChildren<Scrollbar>();
             canvasRoot = GetComponentInChildren<Canvas>().GetComponent<RectTransform>();
@@ -64,13 +68,13 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
             if (entryOverflow > 0)
             {
-                for(int i = 0; i < entryOverflow; i++)
+                for (int i = 0; i < entryOverflow; i++)
                 {
                     Destroy(LogWindow.GetChild(i).gameObject);
                 }
             }
 
-            for(int i = 0; i < GetCurrentLogEntryCount(); i++)
+            for (int i = 0; i < GetCurrentLogEntryCount(); i++)
             {
                 GameObject item = LogWindow.GetChild(i).gameObject;
 
@@ -87,7 +91,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
                 bool hasTimestamp = textContent.StartsWith(timestamp);
 
                 if (ShowTimestamps && !hasTimestamp) { text.text = string.Join(" ", new string[] { timestamp, textContent }); }
-                else if(!ShowTimestamps && hasTimestamp) { text.text = text.text.Substring(timestamp.Length + 1); }
+                else if (!ShowTimestamps && hasTimestamp) { text.text = text.text.Substring(timestamp.Length + 1); }
 
                 SetLogEntryActive(item, type);
             }
@@ -154,15 +158,15 @@ namespace Varneon.UdonPrefabs.RuntimeTools
                     break;
             }
 
-            string[] message = ShowTimestamps ? 
+            string[] message = ShowTimestamps ?
                 new string[]
                 {
                     timestamp,
                     prefix,
                     text
-                } : 
-                new string[] 
-                { 
+                } :
+                new string[]
+                {
                     prefix,
                     text
                 };
@@ -177,14 +181,6 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         }
 
         /// <summary>
-        /// Scrolls to the bottom of the window
-        /// </summary>
-        public void _ScrollToBottom()
-        {
-            scrollbar.value = 0f;
-        }
-
-        /// <summary>
         /// Get the number of entries in the console
         /// </summary>
         /// <returns>Log entry count</returns>
@@ -193,6 +189,28 @@ namespace Varneon.UdonPrefabs.RuntimeTools
             return LogWindow.childCount;
         }
 
+        #region Public Methods
+        /// <summary>
+        /// Scrolls to the bottom of the window
+        /// </summary>
+        public void _ScrollToBottom()
+        {
+            scrollbar.value = 0f;
+        }
+
+        /// <summary>
+        /// Clears the log entries
+        /// </summary>
+        public void _Clear()
+        {
+            for (int i = 0; i < GetCurrentLogEntryCount(); i++)
+            {
+                Destroy(LogWindow.GetChild(i).gameObject);
+            }
+        }
+        #endregion
+
+        #region Logging Methods
         /// <summary>
         /// Log a message to the Udon Console
         /// </summary>
@@ -219,18 +237,9 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         {
             WriteLine("ERROR", message.ToString());
         }
+        #endregion
 
-        /// <summary>
-        /// Clears the log entries
-        /// </summary>
-        public void _Clear()
-        {
-            for(int i = 0; i < GetCurrentLogEntryCount(); i++)
-            {
-                Destroy(LogWindow.GetChild(i).gameObject);
-            }
-        }
-
+        #region Player Events
         public override void OnPlayerJoined(VRCPlayerApi player)
         {
             _Log($"{LOG_PREFIX} {player.displayName} Joined");
@@ -240,17 +249,9 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         {
             _Log($"{LOG_PREFIX} {player.displayName} Left!");
         }
+        #endregion
 
-        /// <summary>
-        /// Applies the max log entry value from MaxLogEntriesField
-        /// </summary>
-        public void _ApplyMaxLogEntries()
-        {
-            int.TryParse(MaxLogEntriesField.text, out MaxLogEntries);
-
-            SetMaxLogEntries(MaxLogEntries);
-        }
-
+        #region Filter Toggles
         /// <summary>
         /// Toggles Log entry type filtering
         /// </summary>
@@ -284,6 +285,18 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
             ReloadLogs();
         }
+        #endregion
+
+        #region Log Entry Limit
+        /// <summary>
+        /// Applies the max log entry value from MaxLogEntriesField
+        /// </summary>
+        public void _ApplyMaxLogEntries()
+        {
+            int.TryParse(MaxLogEntriesField.text, out MaxLogEntries);
+
+            SetMaxLogEntries(MaxLogEntries);
+        }
 
         /// <summary>
         /// Decreases the maximum amount of log entries by 10
@@ -313,6 +326,52 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
             ReloadLogs();
         }
-    }
+        #endregion
 
+        #region Font Size
+        /// <summary>
+        /// Applies the size of the log window font from FontSizeField
+        /// </summary>
+        public void _ApplyFontSize()
+        {
+            int.TryParse(FontSizeField.text, out FontSize);
+
+            SetFontSize(FontSize);
+        }
+
+        /// <summary>
+        /// Decreases the size of the log window font
+        /// </summary>
+        public void _DecreaseFontSize()
+        {
+            SetFontSize(FontSize - 1);
+        }
+
+        /// <summary>
+        /// Increases the size of the log window font
+        /// </summary>
+        public void _IncreaseFontSize()
+        {
+            SetFontSize(FontSize + 1);
+        }
+
+        /// <summary>
+        /// Changes the size of the log window font based on the provided number
+        /// </summary>
+        /// <param name="fontSize"></param>
+        private void SetFontSize(int fontSize)
+        {
+            FontSize = Mathf.Clamp(fontSize, 8, 32);
+
+            FontSizeField.text = FontSize.ToString();
+
+            LogItem.GetComponentInChildren<Text>().fontSize = FontSize;
+
+            foreach (Text text in LogWindow.GetComponentsInChildren<Text>())
+            {
+                text.fontSize = FontSize;
+            }
+        }
+        #endregion
+    }
 }
