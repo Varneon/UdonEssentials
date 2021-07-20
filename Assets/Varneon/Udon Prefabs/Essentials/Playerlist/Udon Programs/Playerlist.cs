@@ -21,7 +21,7 @@ namespace Varneon.UdonPrefabs.Essentials
         private Color CreatorColor;
 
         [SerializeField]
-        private string[] Group1Names, Group2Names;
+        private TextAsset Group1Namelist, Group2Namelist;
 
         [SerializeField]
         private Sprite Group1Icon, Group2Icon;
@@ -44,6 +44,7 @@ namespace Varneon.UdonPrefabs.Essentials
         [UdonSynced] private long instanceStartTime = 0;
         private long utcNow;
         private long localJoinTime = 0;
+        private string[] group1Names, group2Names;
         private VRCPlayerApi localPlayer;
         private VRCPlayerApi[] players;
         private int playerCount;
@@ -62,6 +63,9 @@ namespace Varneon.UdonPrefabs.Essentials
         private void Start()
         {
             localPlayer = Networking.LocalPlayer;
+
+            group1Names = Group1Namelist ? Group1Namelist.text.Split(new char[] { '\n', '\r' }) : new string[0];
+            group2Names = Group2Namelist ? Group2Namelist.text.Split(new char[] { '\n', '\r' }) : new string[0];
 
             UpdateInstanceMaster();
 
@@ -142,9 +146,9 @@ namespace Varneon.UdonPrefabs.Essentials
 
             if (player.IsUserInVR()) { t.GetChild(INDEX_VR).gameObject.SetActive(true); }
 
-            if (IsNameInGroup(player.displayName, Group1Names)) { t.GetChild(INDEX_GROUP1).gameObject.SetActive(true); }
+            if (IsNameInGroup(player.displayName, group1Names)) { t.GetChild(INDEX_GROUP1).gameObject.SetActive(true); }
 
-            if (IsNameInGroup(player.displayName, Group2Names)) { t.GetChild(INDEX_GROUP2).gameObject.SetActive(true); }
+            if (IsNameInGroup(player.displayName, group2Names)) { t.GetChild(INDEX_GROUP2).gameObject.SetActive(true); }
         }
 
         private void RemovePlayer(int id)
@@ -171,7 +175,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             foreach (string s in group)
             {
-                if (s == name)
+                if (string.Equals(s, name))
                 {
                     return true;
                 }
