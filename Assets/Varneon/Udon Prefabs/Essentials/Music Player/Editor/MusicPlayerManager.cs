@@ -51,8 +51,6 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private UdonSharpProgramAsset playerProgram;
 
-        private static readonly string LibraryPath = "Assets/Varneon/Udon Prefabs/Essentials/Music Player/Music Library/";
-
         private static readonly string LogPrefix = "[<color=#000099>Music Player Manager</color>]:";
 
         private struct PlaylistArguments
@@ -294,7 +292,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             {
                 PendingChangesPrompt();
 
-                string path = EditorUtility.SaveFilePanelInProject("Create new music library file", "MusicLibrary", "asset", "Create new music library", LibraryPath);
+                string path = EditorUtility.SaveFilePanelInProject("Create new music library file", "MusicLibrary", "asset", "Create new music library");
 
                 CreateNewLibraryFile(path);
             }
@@ -595,7 +593,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 return;
             }
 
-            string path = EditorUtility.SaveFilePanelInProject("Create a new music library file", "MusicLibrary", "asset", "Create new music library", LibraryPath);
+            string path = EditorUtility.SaveFilePanelInProject("Create a new music library file", "MusicLibrary", "asset", "Create new music library");
 
             CreateNewLibraryFile(path);
         }
@@ -621,7 +619,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
                 preferences.DefaultLibrary = activeLibrary;
 
-                AssetDatabase.CreateAsset(preferences, $"{LibraryPath}Preferences.asset");
+                AssetDatabase.CreateAsset(preferences, $"Assets/Varneon/Udon Prefabs/Essentials/Music Player/Resources/Preferences.asset");
 
                 SaveAsset(preferences);
 
@@ -644,7 +642,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private void LoadPreferences()
         {
-            preferences = AssetDatabase.LoadAssetAtPath<Preferences>($"{LibraryPath}Preferences.asset");
+            preferences = Resources.Load<Preferences>($"Preferences");
         }
 
         private MusicLibrary LoadDefaultOrAnyLibrary()
@@ -706,7 +704,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private void BrowseLibraryFile()
         {
-            string path = EditorUtility.OpenFilePanel("Select music library", LibraryPath, "asset");
+            string path = EditorUtility.OpenFilePanel("Select music library", "Assets", "asset");
 
             if (System.IO.File.Exists(path))
             {
@@ -969,7 +967,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 playlists.Add(playlist);
             }
 
-            string filePath = EditorUtility.SaveFilePanelInProject("Save player's playlists to file", "PlayerLibrary", "asset", "Save playlists to file", LibraryPath);
+            string filePath = EditorUtility.SaveFilePanelInProject("Save player's playlists to file", "PlayerLibrary", "asset", "Save playlists to file");
 
             CreateNewLibraryFile(filePath, playlists);
         }
