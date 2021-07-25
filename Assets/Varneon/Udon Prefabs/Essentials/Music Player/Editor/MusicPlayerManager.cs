@@ -66,7 +66,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
         {
             EditorWindow window = GetWindow<MusicPlayerManager>();
             window.titleContent.text = "Music Player Manager";
-            window.titleContent.image = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Varneon/Udon Prefabs/Essentials/Music Player/Textures/Note.png");
+            window.titleContent.image = Resources.Load<Texture2D>("Icons/Note");
             window.minSize = new Vector2(800, 500);
             window.Show();
         }
