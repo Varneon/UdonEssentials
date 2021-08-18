@@ -1,9 +1,19 @@
 # UdonEssentials
+<div align="center">
+
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Varneon/UdonEssentials?style=for-the-badge)
+[![GitHub](https://img.shields.io/github/license/Varneon/UdonEssentials?color=blue&label=License&style=for-the-badge)](https://github.com/Varneon/UdonEssentials/blob/master/LICENSE)
+[![GitHub Repo stars](https://img.shields.io/github/stars/Varneon/UdonEssentials?style=for-the-badge)](https://github.com/Varneon/UdonEssentials/stargazers)
+[![GitHub all releases](https://img.shields.io/github/downloads/Varneon/UdonEssentials/total?color=blue&style=for-the-badge)](https://github.com/Varneon/UdonEssentials/releases)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/Varneon/UdonEssentials?color=blue&label=Release&sort=semver&style=for-the-badge)](https://github.com/Varneon/UdonEssentials/releases/latest)
+
+</div>
+
+![Header](https://i.imgur.com/xwhDDkB.png)
+
 UdonEssentials is an evergrowing collection of Udon prefabs for VRChat worlds that I think everyone should have at their disposal.
 
 If you would like to test the prefabs in game, feel free to visit this world: https://vrchat.com/home/world/wrld_62e85ddd-65be-4676-83bd-3879347f4eb5
-
-![Header](https://i.imgur.com/xwhDDkB.png)
 
 List of the prefabs:
 | Name | Description | Set-up difficulty |
