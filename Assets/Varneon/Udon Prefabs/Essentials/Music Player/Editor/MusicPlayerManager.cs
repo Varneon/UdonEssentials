@@ -801,7 +801,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 newSongList.Add(song);
             }
 
-            Playlist playlist = Playlists[playerIndex];
+            Playlist playlist = Playlists[playlistIndex];
 
             playlist.Songs = newSongList;
 
