@@ -440,6 +440,8 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <returns>Index of the playlist</returns>
         private int GetPlaylistIndexOfSong(int songIndex)
         {
+            if (songIndex < 0) { return -1; }
+
             if (songIndex >= PlaylistIndices[PlaylistIndices.Length - 1]) { return PlaylistIndices.Length - 1; }
 
             for (int i = 0; i < PlaylistIndices.Length; i++)
@@ -726,6 +728,8 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void LoadAndPlayRandomSongOnList(int playlistIndex)
         {
+            if (playlistIndex < 0) { LogError("Can't load song: Invalid playlist index!"); return; }
+
             Log($"<color=#DCDCAA>{nameof(LoadAndPlayRandomSongOnList)}</color>(<color=#4887BF>int</color> <color=#9CDCFE>playlistIndex</color>: <color=#B5CEA8>{playlistIndex}</color>)");
 
             LoadAndPlaySong(UnityEngine.Random.Range(PlaylistIndices[playlistIndex], GetLastPlaylistSongIndex(playlistIndex) + 1));
