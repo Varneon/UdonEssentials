@@ -41,7 +41,7 @@ namespace Varneon.UdonPrefabs.Essentials
         [Space]
         [Header("Optional")]
         [SerializeField]
-        private HUD HUD;
+        private VHUD HUD;
         */
 
         [Space]
@@ -891,7 +891,7 @@ namespace Varneon.UdonPrefabs.Essentials
             if (currentSongIndex == nextSongIndex) { return; }
 
             //Placeholder for upcoming hud
-            //if (HUD) { HUD._ShowTunifyNotification(TextTitle.text, TextArtist.text); }
+            //if (HUD) { HUD._ShowMusicNotification(TextTitle.text, TextArtist.text); }
 
             currentSongPlaylistIndex = nextSongPlaylistIndex;
 
