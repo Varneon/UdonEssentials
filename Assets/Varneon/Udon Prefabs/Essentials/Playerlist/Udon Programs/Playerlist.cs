@@ -168,7 +168,9 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private void UpdateInstanceMaster()
         {
-            TextInstanceMaster.text = Networking.GetOwner(gameObject).displayName;
+            VRCPlayerApi master = Networking.GetOwner(gameObject);
+
+            if (Utilities.IsValid(master)) { TextInstanceMaster.text = master.displayName; }
         }
 
         private bool IsNameInGroup(string name, string[] group)
@@ -190,7 +192,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
         public override void OnPlayerLeft(VRCPlayerApi player)
         {
-            RemovePlayer(player.playerId);
+            if (Utilities.IsValid(player)) { RemovePlayer(player.playerId); }
 
             UpdateInstanceMaster();
 
