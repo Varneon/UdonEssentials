@@ -26,6 +26,9 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         [SerializeField, Range(8, 32)]
         private int FontSize = 24;
 
+        [SerializeField]
+        private bool ProxyEntriesToLogs;
+
         [Space]
         [Header("References")]
         [SerializeField]
@@ -217,6 +220,8 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// <param name="message"></param>
         public void _Log(object message)
         {
+            if(ProxyEntriesToLogs) { Debug.Log(message); }
+
             WriteLine("LOG", message.ToString());
         }
 
@@ -226,6 +231,8 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// <param name="message"></param>
         public void _LogWarning(object message)
         {
+            if (ProxyEntriesToLogs) { Debug.LogWarning(message); }
+
             WriteLine("WARNING", message.ToString());
         }
 
@@ -235,6 +242,8 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// <param name="message"></param>
         public void _LogError(object message)
         {
+            if (ProxyEntriesToLogs) { Debug.LogError(message); }
+
             WriteLine("ERROR", message.ToString());
         }
         #endregion
