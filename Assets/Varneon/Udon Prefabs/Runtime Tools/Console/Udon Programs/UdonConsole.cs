@@ -247,6 +247,8 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
         public override void OnPlayerLeft(VRCPlayerApi player)
         {
+            if (!Utilities.IsValid(player)) { return; }
+
             _Log($"{LOG_PREFIX} {player.displayName} Left!");
         }
         #endregion
