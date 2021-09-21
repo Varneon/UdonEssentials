@@ -171,7 +171,7 @@ namespace Varneon.UdonPrefabs.Essentials
                 }
                 else
                 {
-                    if(CopyrightFreePlaylistIndices.Length > 0 && CopyrightFreePlaylistIndices[0] == 0)
+                    if(!DisableCopyrightedAutoplay || (CopyrightFreePlaylistIndices.Length > 0 && CopyrightFreePlaylistIndices[0] == 0))
                     {
                         selectedPlaylist = nextSongPlaylistIndex = 0;
                         if (Shuffle || ShufflePlaylist) { LoadAndPlayRandomSongOnList(nextSongPlaylistIndex); }
