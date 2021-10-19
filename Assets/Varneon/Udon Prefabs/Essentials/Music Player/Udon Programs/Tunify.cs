@@ -152,7 +152,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             player = (VRCUnityVideoPlayer)GetComponent(typeof(VRCUnityVideoPlayer));
 
-            volumeIcons = VolumeIcons.GetComponentsInChildren<Image>();
+            volumeIcons = VolumeIcons.GetComponentsInChildren<Image>(true);
 
             ToggleAllowCopyrightedPlaylists.isOn = !DisableCopyrightedAutoplay;
 
@@ -801,7 +801,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             Color color = highlighted ? HighlightColor : new Color(1f, 1f, 1f);
 
-            foreach(Text text in listItem.GetComponentsInChildren<Text>())
+            foreach(Text text in listItem.GetComponentsInChildren<Text>(true))
             {
                 text.color = color;
             }

@@ -138,7 +138,7 @@ namespace Varneon.UdonPrefabs.Essentials
             t.localEulerAngles = new Vector3();
             t.localScale = new Vector3(1, 1, 1);
 
-            Text[] texts = t.GetComponentsInChildren<Text>();
+            Text[] texts = t.GetComponentsInChildren<Text>(true);
 
             texts[INDEX_TEXT_ID].text = player.playerId.ToString();
             texts[INDEX_TEXT_NAME].text = player.displayName;
