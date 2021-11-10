@@ -13,7 +13,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
     /// In-game console window for debugging UdonBehaviours
     /// </summary>
     [DefaultExecutionOrder(-2147483647)]
-    [UdonBehaviourSyncMode(BehaviourSyncMode.NoVariableSync)]
+    [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class UdonConsole : UdonSharpBehaviour
     {
         [Header("Settings")]
