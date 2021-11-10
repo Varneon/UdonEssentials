@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
+﻿#pragma warning disable IDE0044 // Making serialized fields readonly hides them from the inspector
+#pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
 #pragma warning disable 649
 
 using UdonSharp;

@@ -1,4 +1,5 @@
-﻿#pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
+﻿#pragma warning disable IDE0044 // Making serialized fields readonly hides them from the inspector
+#pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
 #pragma warning disable UNT0003 // https://vrchat.canny.io/vrchat-udon-closed-alpha-bugs/p/getcomponentst-functions-are-not-defined-internally-for-vrcsdk3-components
 #pragma warning disable 649
 
