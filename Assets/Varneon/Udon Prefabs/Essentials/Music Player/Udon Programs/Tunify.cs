@@ -80,7 +80,7 @@ namespace Varneon.UdonPrefabs.Essentials
         #region Private Variables
         private VRCUnityVideoPlayer player;
 
-        private readonly string LogPrefix = "[<color=#009999>Tunify</color>]:";
+        private const string LogPrefix = "[<color=#009999>Tunify</color>]:";
 
         [HideInInspector]
         public VRCUrl[] Urls = new VRCUrl[0];
