@@ -922,6 +922,8 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             Undo.PerformRedo(); //Hacky workaround to apply variables to UdonBehaviours on prefabs
 
             RefreshPlayerStats();
+
+            Debug.Log($"{LogPrefix} Applied Music Library To Player Successfully!");
         }
 
         private void SavePlayerPlaylistsToLibrary()
