@@ -51,7 +51,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private UdonSharpProgramAsset playerProgram;
 
-        private static readonly string LogPrefix = "[<color=#4488CC>Music Player Manager</color>]:";
+        private const string LogPrefix = "[<color=#4488CC>Music Player Manager</color>]:";
 
         private struct PlaylistArguments
         {
