@@ -1,12 +1,13 @@
-﻿#pragma warning disable IDE0044 // Making serialized fields readonly hides them from the inspector
+﻿
+#pragma warning disable IDE0044 // Making serialized fields readonly hides them from the inspector
 #pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
 #pragma warning disable 649
 
+using System;
 using UdonSharp;
 using UnityEngine;
-using VRC.SDKBase;
 using UnityEngine.UI;
-using System;
+using VRC.SDKBase;
 
 namespace Varneon.UdonPrefabs.RuntimeTools
 {
@@ -17,6 +18,9 @@ namespace Varneon.UdonPrefabs.RuntimeTools
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class UdonConsole : UdonSharpBehaviour
     {
+        #region Variables
+
+        #region Serialized
         [Header("Settings")]
         [SerializeField]
         private bool ShowTimestamps = false;
@@ -43,15 +47,45 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
         [SerializeField]
         private InputField MaxLogEntriesField, FontSizeField;
+        #endregion
 
-        private const string LOG_PREFIX = "[<color=#00FFFF>UdonConsole</color>]: ";
-
-        private const int ENTRIES_HARDCAP = 1000;
-
+        #region Private
         private Scrollbar scrollbar;
 
         private RectTransform canvasRoot;
+        #endregion
 
+        #region Constants
+        private const string LOG_PREFIX = "[<color=#00FFFF>UdonConsole</color>]:";
+
+        private const string
+            JOIN_PREFIX = "[<color=lime>JOIN</color>]",
+            LEAVE_PREFIX = "[<color=red>LEAVE</color>]";
+
+        private const string
+            LOGTYPE_LOG = "LOG",
+            LOGTYPE_WARNING = "WARNING",
+            LOGTYPE_ERROR = "ERROR";
+
+        private const string
+            LOGTYPE_LOG_PREFIX = "<color=#666666>LOG</color>:",
+            LOGTYPE_WARNING_PREFIX = "<color=#FFFF00>WARNING</color>:",
+            LOGTYPE_ERROR_PREFIX = "<color=#FF0000>ERROR</color>:";
+
+        private const string WHITESPACE = " ";
+
+        private const int MAX_ENTRY_ADJUSTMENT_STEP = 10;
+
+        private const int
+            FONT_MIN_SIZE = 8,
+            FONT_MAX_SIZE = 32;
+
+        private const int ENTRIES_HARDCAP = 1000;
+        #endregion
+
+        #endregion
+
+        #region Private Methods
         private void Start()
         {
             LogItem.GetComponentInChildren<Text>(true).fontSize = FontSize;
@@ -86,7 +120,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
                 string type = info[0];
 
-                string timestamp = string.Join(" ", new string[] { info[1], info[2] });
+                string timestamp = string.Join(WHITESPACE, new string[] { info[1], info[2] });
 
                 Text text = item.GetComponent<Text>();
 
@@ -94,7 +128,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
                 bool hasTimestamp = textContent.StartsWith(timestamp);
 
-                if (ShowTimestamps && !hasTimestamp) { text.text = string.Join(" ", new string[] { timestamp, textContent }); }
+                if (ShowTimestamps && !hasTimestamp) { text.text = string.Join(WHITESPACE, new string[] { timestamp, textContent }); }
                 else if (!ShowTimestamps && hasTimestamp) { text.text = text.text.Substring(timestamp.Length + 1); }
 
                 SetLogEntryActive(item, type);
@@ -109,9 +143,9 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         private void SetLogEntryActive(GameObject logEntry, string type)
         {
             logEntry.SetActive(
-                (type == "LOG" && !ToggleLog.isOn) ||
-                (type == "WARNING" && !ToggleWarning.isOn) ||
-                (type == "ERROR" && !ToggleError.isOn)
+                (type == LOGTYPE_LOG && !ToggleLog.isOn) ||
+                (type == LOGTYPE_WARNING && !ToggleWarning.isOn) ||
+                (type == LOGTYPE_ERROR && !ToggleError.isOn)
                 );
         }
 
@@ -144,21 +178,21 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
             GameObject newEntryGO = newEntry.gameObject;
 
-            newEntryGO.name = string.Join(" ", new string[] { type, timestamp });
+            newEntryGO.name = string.Join(WHITESPACE, new string[] { type, timestamp });
             textComponent = newEntry.GetComponent<Text>();
 
             string prefix = string.Empty;
 
             switch (type)
             {
-                case "LOG":
-                    prefix = "<color=#666666>LOG</color>:";
+                case LOGTYPE_LOG:
+                    prefix = LOGTYPE_LOG_PREFIX;
                     break;
-                case "WARNING":
-                    prefix = "<color=#FFFF00>WARNING</color>:";
+                case LOGTYPE_WARNING:
+                    prefix = LOGTYPE_WARNING_PREFIX;
                     break;
-                case "ERROR":
-                    prefix = "<color=#FF0000>ERROR</color>:";
+                case LOGTYPE_ERROR:
+                    prefix = LOGTYPE_ERROR_PREFIX;
                     break;
             }
 
@@ -175,7 +209,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
                     text
                 };
 
-            textComponent.text = string.Join(" ", message);
+            textComponent.text = string.Join(WHITESPACE, message);
 
             SetLogEntryActive(newEntryGO, type);
 
@@ -192,6 +226,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         {
             return LogWindow.childCount;
         }
+        #endregion
 
         #region Public Methods
         /// <summary>
@@ -223,7 +258,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         {
             if(ProxyEntriesToLogs) { Debug.Log(message); }
 
-            WriteLine("LOG", message.ToString());
+            WriteLine(LOGTYPE_LOG, message.ToString());
         }
 
         /// <summary>
@@ -234,7 +269,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         {
             if (ProxyEntriesToLogs) { Debug.LogWarning(message); }
 
-            WriteLine("WARNING", message.ToString());
+            WriteLine(LOGTYPE_WARNING, message.ToString());
         }
 
         /// <summary>
@@ -245,21 +280,21 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         {
             if (ProxyEntriesToLogs) { Debug.LogError(message); }
 
-            WriteLine("ERROR", message.ToString());
+            WriteLine(LOGTYPE_ERROR, message.ToString());
         }
         #endregion
 
         #region Player Events
         public override void OnPlayerJoined(VRCPlayerApi player)
         {
-            _Log($"{LOG_PREFIX} {player.displayName} Joined");
+            _Log(string.Join(WHITESPACE, new string[] { LOG_PREFIX, JOIN_PREFIX, player.displayName }));
         }
 
         public override void OnPlayerLeft(VRCPlayerApi player)
         {
             if (!Utilities.IsValid(player)) { return; }
 
-            _Log($"{LOG_PREFIX} {player.displayName} Left!");
+            _Log(string.Join(WHITESPACE, new string[] { LOG_PREFIX, LEAVE_PREFIX, player.displayName }));
         }
         #endregion
 
@@ -315,7 +350,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// </summary>
         public void _DecreaseMaxEntries()
         {
-            SetMaxLogEntries(MaxLogEntries - 10);
+            SetMaxLogEntries(MaxLogEntries - MAX_ENTRY_ADJUSTMENT_STEP);
         }
 
         /// <summary>
@@ -323,7 +358,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// </summary>
         public void _IncreaseMaxEntries()
         {
-            SetMaxLogEntries(MaxLogEntries + 10);
+            SetMaxLogEntries(MaxLogEntries + MAX_ENTRY_ADJUSTMENT_STEP);
         }
 
         /// <summary>
@@ -356,7 +391,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// </summary>
         public void _DecreaseFontSize()
         {
-            SetFontSize(FontSize - 1);
+            SetFontSize(--FontSize);
         }
 
         /// <summary>
@@ -364,7 +399,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// </summary>
         public void _IncreaseFontSize()
         {
-            SetFontSize(FontSize + 1);
+            SetFontSize(++FontSize);
         }
 
         /// <summary>
@@ -373,7 +408,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// <param name="fontSize"></param>
         private void SetFontSize(int fontSize)
         {
-            FontSize = Mathf.Clamp(fontSize, 8, 32);
+            FontSize = Mathf.Clamp(fontSize, FONT_MIN_SIZE, FONT_MAX_SIZE);
 
             FontSizeField.text = FontSize.ToString();
 
