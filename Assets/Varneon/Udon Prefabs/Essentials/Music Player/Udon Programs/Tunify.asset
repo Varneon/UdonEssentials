@@ -2095,7 +2095,7 @@ MonoBehaviour:
       Data: 115|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: Varneon.UdonPrefabs.RuntimeTools.UdonConsole, Assembly-CSharp
+      Data: Varneon.UdonPrefabs.RuntimeTools.UdonConsole, Varneon.UdonPrefabs.RuntimeTools
     - Name: 
       Entry: 8
       Data: 
