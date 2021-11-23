@@ -8,10 +8,10 @@ using UnityEditorInternal;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
-using Playlist = Varneon.UdonPrefabs.Essentials.Editor.MusicLibrary.Playlist;
-using Song = Varneon.UdonPrefabs.Essentials.Editor.MusicLibrary.Song;
+using Playlist = Varneon.UdonPrefabs.Essentials.MusicPlayerEditor.MusicLibrary.Playlist;
+using Song = Varneon.UdonPrefabs.Essentials.MusicPlayerEditor.MusicLibrary.Song;
 
-namespace Varneon.UdonPrefabs.Essentials.Editor
+namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
 {
     public class MusicPlayerManager : EditorWindow
     {
