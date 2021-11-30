@@ -2,6 +2,7 @@
 #pragma warning disable 649
 
 using System;
+using System.Globalization;
 using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,16 +17,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
         [Header("Settings")]
         [SerializeField]
-        private string CreatorName;
-
-        [SerializeField]
-        private Color CreatorColor;
-
-        [SerializeField]
-        private TextAsset Group1Namelist, Group2Namelist;
-
-        [SerializeField]
-        private Sprite Group1Icon, Group2Icon;
+        private Groups groups;
 
         [Space]
         [Header("References")]
@@ -45,7 +37,6 @@ namespace Varneon.UdonPrefabs.Essentials
         [UdonSynced] private long instanceStartTime = 0;
         private long utcNow;
         private long localJoinTime = 0;
-        private string[] group1Names, group2Names;
         private VRCPlayerApi localPlayer;
         private VRCPlayerApi[] players;
         private int playerCount;
@@ -58,15 +49,13 @@ namespace Varneon.UdonPrefabs.Essentials
             INDEX_TEXT_ID = 0,
             INDEX_TEXT_NAME = 1,
             INDEX_TEXT_TIME = 2;
+        private const NumberStyles HEX_NUMSTYLE = NumberStyles.HexNumber;
 
         #endregion
 
         private void Start()
         {
             localPlayer = Networking.LocalPlayer;
-
-            group1Names = Group1Namelist ? Group1Namelist.text.Split(new char[] { '\n', '\r' }) : new string[0];
-            group2Names = Group2Namelist ? Group2Namelist.text.Split(new char[] { '\n', '\r' }) : new string[0];
 
             UpdateInstanceMaster();
 
@@ -80,17 +69,13 @@ namespace Varneon.UdonPrefabs.Essentials
 
                 RequestSerialization();
             }
-
-            PlayerListItem.transform.GetChild(INDEX_GROUP1).GetComponent<Image>().sprite = Group1Icon;
-
-            PlayerListItem.transform.GetChild(INDEX_GROUP2).GetComponent<Image>().sprite = Group2Icon;
         }
 
         private void Update()
         {
             updateTimer += Time.deltaTime;
 
-            if(updateTimer >= 1f)
+            if (updateTimer >= 1f)
             {
                 UpdateUtcTime();
 
@@ -119,25 +104,22 @@ namespace Varneon.UdonPrefabs.Essentials
 
             playerCount = (count > playerCount) ? count : playerCount;
 
-            TextPlayersOnline.text = $"{players.Length - ((count < 0f) ? 1 : 0)} / {playerCount}";
+            TextPlayersOnline.text = $"{players.Length - ((count < 0) ? 1 : 0)} / {playerCount}";
         }
 
         private void AddPlayer(VRCPlayerApi player)
         {
-            if(player.playerId > playerCount) { UpdateTotalPlayerCount(player.playerId); }
+            if (player.playerId > playerCount) { UpdateTotalPlayerCount(player.playerId); }
 
             GameObject newPlayerlistPanel = VRCInstantiate(PlayerListItem);
 
-            if(player.displayName == CreatorName)
-            {
-                newPlayerlistPanel.GetComponent<Image>().color = CreatorColor;
-            }
+            newPlayerlistPanel.SetActive(true);
 
             Transform t = newPlayerlistPanel.transform;
             t.SetParent(PlayerList.transform);
-            t.localPosition = new Vector3();
-            t.localEulerAngles = new Vector3();
-            t.localScale = new Vector3(1, 1, 1);
+            t.localPosition = Vector3.zero;
+            t.localEulerAngles = Vector3.zero;
+            t.localScale = Vector3.one;
 
             Text[] texts = t.GetComponentsInChildren<Text>(true);
 
@@ -147,18 +129,80 @@ namespace Varneon.UdonPrefabs.Essentials
 
             if (player.IsUserInVR()) { t.GetChild(INDEX_VR).gameObject.SetActive(true); }
 
-            if (IsNameInGroup(player.displayName, group1Names)) { t.GetChild(INDEX_GROUP1).gameObject.SetActive(true); }
+            if (groups) { ApplyGroupsInfo(t, player.displayName); }
+        }
 
-            if (IsNameInGroup(player.displayName, group2Names)) { t.GetChild(INDEX_GROUP2).gameObject.SetActive(true); }
+        private void ApplyGroupsInfo(Transform playlistPanel, string displayName)
+        {
+            int[] playerGroupIndices = groups._GetGroupIndicesOfPlayer(displayName);
+
+            int shownGroupCount = 0;
+
+            bool customColorApplied = false;
+
+            for (int i = 0; i < playerGroupIndices.Length; i++)
+            {
+                int groupIndex = playerGroupIndices[i];
+
+                string groupArguments = groups._GetGroupArguments(groupIndex);
+
+                if (!customColorApplied && groupArguments.Contains("-playerlistFrameColor"))
+                {
+                    string hex = GetArgumentValue(groupArguments, "-playerlistFrameColor").Trim('#');
+
+                    playlistPanel.GetComponent<Image>().color = new Color(
+                        byte.Parse(hex.Substring(0, 2), HEX_NUMSTYLE) / 255f,
+                        byte.Parse(hex.Substring(2, 2), HEX_NUMSTYLE) / 255f,
+                        byte.Parse(hex.Substring(4, 2), HEX_NUMSTYLE) / 255f
+                        );
+
+                    customColorApplied = true;
+                }
+
+                GameObject imageGO = playlistPanel.GetChild(shownGroupCount == 0 ? INDEX_GROUP1 : INDEX_GROUP2).gameObject;
+
+                if (!groupArguments.Contains("-noPlayerlistIcon"))
+                {
+                    Sprite icon = groups._GetGroupIcon(groupIndex);
+
+                    if (icon != null)
+                    {
+                        imageGO.SetActive(true);
+
+                        imageGO.GetComponent<Image>().sprite = icon;
+
+                        if (++shownGroupCount >= 2)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private string GetArgumentValue(string args, string arg)
+        {
+            int argPos = args.IndexOf(arg);
+
+            if (argPos >= 0)
+            {
+                argPos += arg.Length;
+
+                int argBreak = args.IndexOf(' ', argPos);
+
+                return args.Substring(argPos + 1, argBreak < 0 ? args.Length - argPos - 1 : argBreak - argPos);
+            }
+
+            return string.Empty;
         }
 
         private void RemovePlayer(int id)
         {
-            for(int i = 0; i < PlayerList.childCount; i++)
+            for (int i = 0; i < PlayerList.childCount; i++)
             {
                 Transform item = PlayerList.GetChild(i);
 
-                if(Convert.ToInt32(item.GetChild(INDEX_ID).GetComponent<Text>().text) == id)
+                if (Convert.ToInt32(item.GetChild(INDEX_ID).GetComponent<Text>().text) == id)
                 {
                     Destroy(item.gameObject);
 
@@ -172,18 +216,6 @@ namespace Varneon.UdonPrefabs.Essentials
             VRCPlayerApi master = Networking.GetOwner(gameObject);
 
             if (Utilities.IsValid(master)) { TextInstanceMaster.text = master.displayName; }
-        }
-
-        private bool IsNameInGroup(string name, string[] group)
-        {
-            foreach (string s in group)
-            {
-                if (string.Equals(s, name))
-                {
-                    return true;
-                }
-            }
-            return false;
         }
 
         public override void OnPlayerJoined(VRCPlayerApi player)
