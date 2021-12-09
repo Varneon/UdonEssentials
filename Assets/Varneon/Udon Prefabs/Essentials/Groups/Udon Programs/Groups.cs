@@ -49,6 +49,8 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private readonly char[] NewlineChars = new char[] { '\n', '\r' };
 
+        private const string NamePaddingTemplate = "\n{0}\n";
+
 #pragma warning disable IDE0052 // Variable is only used for the custom inspector
 
         [SerializeField, HideInInspector]
@@ -68,7 +70,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <returns></returns>
         public int[] _GetGroupIndicesOfPlayer(string displayName)
         {
-            int lookupPos = memberList.IndexOf(displayName);
+            int lookupPos = memberList.IndexOf(string.Format(NamePaddingTemplate, displayName));
 
             if(lookupPos < 0) { return new int[0]; }
 
@@ -118,6 +120,8 @@ namespace Varneon.UdonPrefabs.Essentials
         private UdonBehaviour groupsUdonBehaviour;
 
         private List<Group> groups;
+
+        private const string NamelistPaddingTemplate = "\n{0}\n";
 
         private struct Group
         {
@@ -186,7 +190,7 @@ namespace Varneon.UdonPrefabs.Essentials
                     }
                 }
 
-                SetProgramVariable(variables, "memberList", string.Join("\n", groupData.Keys.ToArray()));
+                SetProgramVariable(variables, "memberList", string.Format(NamelistPaddingTemplate, string.Join("\n", groupData.Keys.ToArray())));
                 SetProgramVariable(variables, "memberGroupIndices", groupData.Select(c => (object)c.Value.ToArray()).ToArray());
 
                 groupsBehaviour.UpdateProxy();

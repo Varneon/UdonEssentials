@@ -429,12 +429,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Groups
       objectReference: {fileID: 0}
-    - target: {fileID: 4495689120042432191, guid: 529a037b75efe0b47abde45ede9002b1,
-        type: 3}
-      propertyPath: serializedProgramAsset
-      value: 
-      objectReference: {fileID: 11400000, guid: 7cce012bbaf6ac349ac2b48460298086,
-        type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 529a037b75efe0b47abde45ede9002b1, type: 3}
 --- !u!114 &1286989992 stripped
