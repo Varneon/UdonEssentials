@@ -28,7 +28,7 @@ List of the prefabs:
 ### Prerequisites:
 Make sure that the following packages are already imported in your project:
 * [VRCSDK3](https://vrchat.com/download/sdk3-worlds)
-* [UdonSharp](https://github.com/MerlinVR/UdonSharp/releases/latest)
+* [UdonSharp](https://github.com/vrchat-community/UdonSharp/releases/latest)
 
 ### Installation:
 1. Download the latest UdonEssentials .unitypackage [here](https://github.com/Varneon/UdonEssentials/releases/latest)
