@@ -1,4 +1,6 @@
 ﻿
+#pragma warning disable IDE0044 // readonly modifier hides the serialized field in Unity inspector
+
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
