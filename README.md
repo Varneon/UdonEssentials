@@ -18,6 +18,7 @@ If you would like to test the prefabs in game, feel free to visit this world: ht
 List of the prefabs:
 | Name | Description | Set-up difficulty |
 | ------------- |:-------------:| -----:|
+| Simple Player Settings | Simple, but more advanced replacement for the original "VRCWorldSettings" UdonBehaviour that ships with VRCSDK | Drag & Drop |
 | Playerlist | List that shows all players in the instance, player count, player join times, instance lifetime and master | Drag & Drop |
 | Music Player | Music player that allows world creators to create playlists for their worlds for everyone to listen to | Beginner |
 | Groups | UdonBehaviour for establishing in-game groups which can be accessed from other UdonBehaviours | Beginner |
