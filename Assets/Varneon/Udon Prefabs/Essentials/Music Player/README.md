@@ -32,4 +32,4 @@ Optional advanced steps:
 
 1) You may change any of the parameters on the Tunify UdonBehaviour under the "Settings" tab. Please do not modify the References unless you know what you are doing
 
-2) If you would like to debug the player in game, the Tunify UdonBehaviour has a field for my UdonDebugger which is demonstrated in the example scene
+2) If you would like to debug the player in game, the Tunify UdonBehaviour has a field for my UdonConsole which is demonstrated in the example scene
