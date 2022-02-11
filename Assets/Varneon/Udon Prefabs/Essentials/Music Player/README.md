@@ -30,8 +30,6 @@ Instructions for setting up the player:
 
 Optional advanced steps:
 
-1) If you want to add more audio sources, assign them in the VRCUnityVideoPlayer on the Tunify GameObject and also add them into the UdonBehaviour audio sources list so the volume slider will still be linked to the source
+1) You may change any of the parameters on the Tunify UdonBehaviour under the "Settings" tab. Please do not modify the References unless you know what you are doing
 
-2) You may change any of the parameters on the Tunify UdonBehaviour under the "Settings" tab. Please do not modify the References unless you know what you are doing
-
-3) If you would like to debug the player in game, the Tunify UdonBehaviour has a field for my UdonDebugger which is demonstrated in the example scene
+2) If you would like to debug the player in game, the Tunify UdonBehaviour has a field for my UdonDebugger which is demonstrated in the example scene
