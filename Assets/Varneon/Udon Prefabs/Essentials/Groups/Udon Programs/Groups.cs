@@ -70,7 +70,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <returns></returns>
         public int[] _GetGroupIndicesOfPlayer(string displayName)
         {
-            int lookupPos = memberList.IndexOf(string.Format(NamePaddingTemplate, displayName));
+            int lookupPos = GetPlayerLookupIndex(displayName);
 
             if(lookupPos < 0) { return new int[0]; }
 
@@ -105,6 +105,66 @@ namespace Varneon.UdonPrefabs.Essentials
         public string _GetGroupArguments(int groupIndex)
         {
             return groupArguments[groupIndex];
+        }
+
+        /// <summary>
+        /// Runtime method for adding players into groups
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <param name="displayNames"></param>
+        public void _AddPlayersToGroup(string groupName, string[] displayNames)
+        {
+            int groupIndex = 0;
+
+            for(int i = 0; i < groupNames.Length; i++)
+            {
+                if (groupNames[i].Equals(groupName))
+                {
+                    groupIndex = i;
+
+                    break;
+                }
+            }
+
+            foreach(string displayName in displayNames)
+            {
+                AddPlayerToGroup(groupIndex, displayName);
+            }
+        }
+
+        private void AddPlayerToGroup(int groupIndex, string displayName)
+        {
+            int playerLookupIndex = GetPlayerLookupIndex(displayName);
+
+            if(playerLookupIndex < 0)
+            {
+                memberList += $"{displayName}\n";
+
+                int memberCount = memberGroupIndices.Length;
+                int[][] tempMemberGroupIndices = new int[memberCount + 1][];
+                memberGroupIndices.CopyTo(tempMemberGroupIndices, 0);
+                memberGroupIndices = tempMemberGroupIndices;
+                memberGroupIndices[memberCount] = new int[] { groupIndex };
+            }
+            else
+            {
+                int[] indices = memberGroupIndices[playerLookupIndex];
+                foreach(int index in indices)
+                {
+                    if (index.Equals(groupIndex)) { return; }
+                }
+                int groupCount = indices.Length;
+                int[] tempIndices = new int[groupCount + 1];
+                indices.CopyTo(tempIndices, 0);
+                indices = tempIndices;
+                indices[groupCount] = groupIndex;
+                memberGroupIndices[playerLookupIndex] = indices;
+            }
+        }
+
+        private int GetPlayerLookupIndex(string displayName)
+        {
+            return memberList.IndexOf(string.Format(NamePaddingTemplate, displayName));
         }
     }
 
