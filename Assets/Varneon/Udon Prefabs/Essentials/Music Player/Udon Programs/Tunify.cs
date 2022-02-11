@@ -42,7 +42,7 @@ namespace Varneon.UdonPrefabs.Essentials
         [Space]
         [Header("Optional")]
         [SerializeField]
-        private VHUD HUD;
+        private HUD HUD;
         */
 
         [Space]
