@@ -1088,13 +1088,6 @@ namespace Varneon.UdonPrefabs.Essentials
 
             UdonBehaviour ub = tunify.GetComponent<UdonBehaviour>();
 
-            if (ub == null)
-            {
-                UdonSharpEditorUtility.ConvertToUdonBehaviours(new UdonSharpBehaviour[] { tunify });
-
-                return;
-            }
-
             ub.AllowCollisionOwnershipTransfer = false;
             ub.SynchronizePosition = false;
         }

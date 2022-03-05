@@ -196,7 +196,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             groupsBehaviour = (Groups)target;
 
-            groupsUdonBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(groupsBehaviour) ?? UdonSharpEditorUtility.ConvertToUdonBehaviours(new UdonSharpBehaviour[] { groupsBehaviour })[0];
+            groupsUdonBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(groupsBehaviour);
 
             groups = new List<Group>();
 
