@@ -22,7 +22,7 @@ namespace Varneon.UdonPrefabs.Essentials
     /// <summary>
     /// Simple storage behaviour for adding users into groups that can be fetched during runtime
     /// </summary>
-    [DefaultExecutionOrder(-2147483647)]
+    [DefaultExecutionOrder(-2146483647)]
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class Groups : UdonSharpBehaviour
     {
