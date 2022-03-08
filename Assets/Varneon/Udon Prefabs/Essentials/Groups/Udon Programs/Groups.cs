@@ -181,6 +181,8 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private List<Group> groups;
 
+        private bool isDirty;
+
         private const string NamelistPaddingTemplate = "\n{0}\n";
 
         private struct Group
@@ -211,11 +213,6 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 groups.Add(new Group() { Name = groupNames[i], Icon = groupIcons[i], Usernames = groupUsernames[i], Arguments = groupArguments[i] });
             }
-        }
-
-        private void OnDestroy()
-        {
-            SaveGroupsToUdonBehaviour();
         }
 
         private void SaveGroupsToUdonBehaviour()
@@ -269,6 +266,11 @@ namespace Varneon.UdonPrefabs.Essentials
             }
         }
 
+        private void SetVariablesDirty()
+        {
+            isDirty = true;
+        }
+
         public override void OnInspectorGUI()
         {
             using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
@@ -291,7 +293,7 @@ namespace Varneon.UdonPrefabs.Essentials
                             group.Expanded = EditorGUILayout.Foldout(group.Expanded, group.Name, true);
                         }
 
-                        if (GUILayout.Button("X", GUILayout.Width(25))) { if (EditorUtility.DisplayDialog("Remove Group?", $"Are you sure you want to remove the following group:\n\n{group.Name}", "Yes", "No")) { groups.RemoveAt(i); break; } }
+                        if (GUILayout.Button("X", GUILayout.Width(25))) { if (EditorUtility.DisplayDialog("Remove Group?", $"Are you sure you want to remove the following group:\n\n{group.Name}", "Yes", "No")) { SetVariablesDirty(); groups.RemoveAt(i); break; } }
                     }
 
                     if (group.Expanded)
@@ -300,11 +302,19 @@ namespace Varneon.UdonPrefabs.Essentials
                         {
                             using (new GUILayout.VerticalScope())
                             {
-                                group.Name = EditorGUILayout.TextField("Name:", groups[i].Name);
+                                using (var scope = new EditorGUI.ChangeCheckScope())
+                                {
+                                    group.Name = EditorGUILayout.TextField("Name:", groups[i].Name);
 
-                                group.Usernames = (TextAsset)EditorGUILayout.ObjectField("Username List:", group.Usernames, typeof(TextAsset), false);
+                                    group.Usernames = (TextAsset)EditorGUILayout.ObjectField("Username List:", group.Usernames, typeof(TextAsset), false);
 
-                                group.Arguments = EditorGUILayout.TextField("Arguments (WIP):", groups[i].Arguments);
+                                    group.Arguments = EditorGUILayout.TextField("Arguments (WIP):", groups[i].Arguments);
+
+                                    if (scope.changed)
+                                    {
+                                        SetVariablesDirty();
+                                    }
+                                }
 
                                 using (new GUILayout.HorizontalScope())
                                 {
@@ -312,7 +322,15 @@ namespace Varneon.UdonPrefabs.Essentials
                                 }
                             }
 
-                            group.Icon = (Sprite)EditorGUILayout.ObjectField(group.Icon, typeof(Sprite), false, new GUILayoutOption[] { GUILayout.Width(ThreeLines), GUILayout.Height(ThreeLines) });
+                            using (var scope = new EditorGUI.ChangeCheckScope())
+                            {
+                                group.Icon = (Sprite)EditorGUILayout.ObjectField(group.Icon, typeof(Sprite), false, new GUILayoutOption[] { GUILayout.Width(ThreeLines), GUILayout.Height(ThreeLines) });
+
+                                if (scope.changed)
+                                {
+                                    SetVariablesDirty();
+                                }
+                            }
 
                             using (new GUILayout.VerticalScope())
                             {
@@ -320,6 +338,7 @@ namespace Varneon.UdonPrefabs.Essentials
                                 {
                                     if (GUILayout.Button("▲", GUILayout.Width(25)))
                                     {
+                                        SetVariablesDirty();
                                         groups.RemoveAt(i);
                                         groups.Insert(i - 1, group);
                                         break;
@@ -336,6 +355,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
                                         if (newIndex >= 0 && newIndex < groups.Count)
                                         {
+                                            SetVariablesDirty();
                                             groups.RemoveAt(i);
                                             groups.Insert(newIndex, group);
                                             break;
@@ -347,6 +367,7 @@ namespace Varneon.UdonPrefabs.Essentials
                                 {
                                     if (GUILayout.Button("▼", GUILayout.Width(25)))
                                     {
+                                        SetVariablesDirty();
                                         groups.RemoveAt(i);
                                         groups.Insert(i + 1, group);
                                         break;
@@ -364,11 +385,17 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 if (GUILayout.Button("New Group"))
                 {
+                    SetVariablesDirty();
                     groups.Add(new Group() { Expanded = true, Name = $"Group #{groups.Count + 1}" });
                 }
-                else if (GUILayout.Button("Save Groups"))
+
+                using (new EditorGUI.DisabledGroupScope(!isDirty))
                 {
-                    SaveGroupsToUdonBehaviour();
+                    if (GUILayout.Button("Save Groups"))
+                    {
+                        isDirty = false;
+                        SaveGroupsToUdonBehaviour();
+                    }
                 }
             }
         }
