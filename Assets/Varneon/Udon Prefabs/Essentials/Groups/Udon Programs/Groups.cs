@@ -10,6 +10,7 @@ using System.Linq;
 using VRC.Udon.Common.Interfaces;
 using System;
 using VRC.Udon.Common;
+using System.Reflection;
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
 using UdonSharpEditor;
@@ -72,7 +73,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             int lookupPos = GetPlayerLookupIndex(displayName);
 
-            if(lookupPos < 0) { return new int[0]; }
+            if (lookupPos < 0) { return new int[0]; }
 
             return memberGroupIndices[memberList.Substring(0, lookupPos).Split(NewlineChars).Length - 1];
         }
@@ -116,7 +117,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             int groupIndex = 0;
 
-            for(int i = 0; i < groupNames.Length; i++)
+            for (int i = 0; i < groupNames.Length; i++)
             {
                 if (groupNames[i].Equals(groupName))
                 {
@@ -126,7 +127,7 @@ namespace Varneon.UdonPrefabs.Essentials
                 }
             }
 
-            foreach(string displayName in displayNames)
+            foreach (string displayName in displayNames)
             {
                 AddPlayerToGroup(groupIndex, displayName);
             }
@@ -136,7 +137,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             int playerLookupIndex = GetPlayerLookupIndex(displayName);
 
-            if(playerLookupIndex < 0)
+            if (playerLookupIndex < 0)
             {
                 memberList += $"{displayName}\n";
 
@@ -149,7 +150,7 @@ namespace Varneon.UdonPrefabs.Essentials
             else
             {
                 int[] indices = memberGroupIndices[playerLookupIndex];
-                foreach(int index in indices)
+                foreach (int index in indices)
                 {
                     if (index.Equals(groupIndex)) { return; }
                 }
@@ -183,6 +184,16 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private bool isDirty;
 
+        private bool isUdonSharpOne;
+
+        private bool isPlayModeActive;
+
+        private bool isPrefabInspector;
+
+        private string groupsPreviewText;
+
+        private bool waitingForPrefabUnpack;
+
         private const string NamelistPaddingTemplate = "\n{0}\n";
 
         private struct Group
@@ -196,38 +207,62 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private void OnEnable()
         {
+            if (isPlayModeActive = EditorApplication.isPlaying) { return; }
+
             groupsBehaviour = (Groups)target;
 
             groupsUdonBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(groupsBehaviour);
 
-            groups = new List<Group>();
-
             IUdonVariableTable variables = groupsUdonBehaviour.publicVariables;
 
-            variables.TryGetVariableValue("groupNames", out string[] groupNames);
-            variables.TryGetVariableValue("groupIcons", out Sprite[] groupIcons);
-            variables.TryGetVariableValue("groupArguments", out string[] groupArguments);
-            variables.TryGetVariableValue("groupUsernames", out TextAsset[] groupUsernames);
+            isUdonSharpOne = variables.TryGetVariableValue("___UdonSharpBehaviourVersion___", out _);
 
-            for(int i = 0; i < groupNames?.Length; i++)
+            if (PrefabUtility.IsPartOfPrefabInstance(groupsUdonBehaviour))
+            {
+                waitingForPrefabUnpack = true;
+            }
+
+            groups = new List<Group>();
+
+            string[] groupNames;
+            Sprite[] groupIcons;
+            string[] groupArguments;
+            TextAsset[] groupUsernames;
+
+            if (isUdonSharpOne)
+            {
+                FieldInfo[] fieldInfos = typeof(Groups).GetRuntimeFields().ToArray();
+
+                groupNames = GetVariable(fieldInfos, "groupNames") as string[];
+                groupIcons = GetVariable(fieldInfos, "groupIcons") as Sprite[];
+                groupArguments = GetVariable(fieldInfos, "groupArguments") as string[];
+                groupUsernames = GetVariable(fieldInfos, "groupUsernames") as TextAsset[];
+            }
+            else
+            {
+                variables.TryGetVariableValue("groupNames", out groupNames);
+                variables.TryGetVariableValue("groupIcons", out groupIcons);
+                variables.TryGetVariableValue("groupArguments", out groupArguments);
+                variables.TryGetVariableValue("groupUsernames", out groupUsernames);
+            }
+
+            for (int i = 0; i < groupNames?.Length; i++)
             {
                 groups.Add(new Group() { Name = groupNames[i], Icon = groupIcons[i], Usernames = groupUsernames[i], Arguments = groupArguments[i] });
+            }
+
+            if (PrefabUtility.IsPartOfPrefabAsset(groupsBehaviour) || UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage() != null || waitingForPrefabUnpack)
+            {
+                isPrefabInspector = !waitingForPrefabUnpack;
+
+                groupsPreviewText = string.Join("\n\n", groups.Select(c => $"{c.Name}:\n{string.Join("\n", c.Usernames.text)}").ToArray());
             }
         }
 
         private void SaveGroupsToUdonBehaviour()
         {
-            if (groupsUdonBehaviour)
+            if (groupsBehaviour && groupsUdonBehaviour)
             {
-                Undo.RecordObject(groupsUdonBehaviour, "Apply group data");
-
-                IUdonVariableTable variables = groupsUdonBehaviour.publicVariables;
-
-                SetProgramVariable(variables, "groupNames", groups.Select(c => c.Name).ToArray());
-                SetProgramVariable(variables, "groupIcons", groups.Select(c => c.Icon).ToArray());
-                SetProgramVariable(variables, "groupArguments", groups.Select(c => c.Arguments ?? string.Empty).ToArray());
-                SetProgramVariable(variables, "groupUsernames", groups.Select(c => c.Usernames).ToArray());
-
                 Dictionary<string, List<int>> groupData = new Dictionary<string, List<int>>();
 
                 for (int i = 0; i < groups.Count; i++)
@@ -247,10 +282,64 @@ namespace Varneon.UdonPrefabs.Essentials
                     }
                 }
 
-                SetProgramVariable(variables, "memberList", string.Format(NamelistPaddingTemplate, string.Join("\n", groupData.Keys.ToArray())));
-                SetProgramVariable(variables, "memberGroupIndices", groupData.Select(c => (object)c.Value.ToArray()).ToArray());
+                if (isUdonSharpOne)
+                {
+                    Undo.RecordObject(groupsBehaviour, "Apply group data");
 
-                groupsBehaviour.UpdateProxy();
+                    FieldInfo[] fieldInfos = typeof(Groups).GetRuntimeFields().ToArray();
+
+                    SetVariable(fieldInfos, "groupNames", groups.Select(c => c.Name).ToArray());
+                    SetVariable(fieldInfos, "groupIcons", groups.Select(c => c.Icon).ToArray());
+                    SetVariable(fieldInfos, "groupArguments", groups.Select(c => c.Arguments ?? string.Empty).ToArray());
+                    SetVariable(fieldInfos, "groupUsernames", groups.Select(c => c.Usernames).ToArray());
+                    SetVariable(fieldInfos, "memberList", string.Format(NamelistPaddingTemplate, string.Join("\n", groupData.Keys.ToArray())));
+                    SetVariable(fieldInfos, "memberGroupIndices", groupData.Select(c => c.Value.ToArray()).ToArray());
+
+                    EditorUtility.SetDirty(groupsBehaviour);
+                }
+                else
+                {
+                    Undo.RecordObject(groupsUdonBehaviour, "Apply group data");
+
+                    IUdonVariableTable variables = groupsUdonBehaviour.publicVariables;
+
+                    SetProgramVariable(variables, "groupNames", groups.Select(c => c.Name).ToArray());
+                    SetProgramVariable(variables, "groupIcons", groups.Select(c => c.Icon).ToArray());
+                    SetProgramVariable(variables, "groupArguments", groups.Select(c => c.Arguments ?? string.Empty).ToArray());
+                    SetProgramVariable(variables, "groupUsernames", groups.Select(c => c.Usernames).ToArray());
+                    SetProgramVariable(variables, "memberList", string.Format(NamelistPaddingTemplate, string.Join("\n", groupData.Keys.ToArray())));
+                    SetProgramVariable(variables, "memberGroupIndices", groupData.Select(c => (object)c.Value.ToArray()).ToArray());
+
+                    UdonSharpEditorUtility.CopyUdonToProxy(groupsBehaviour);
+
+                    EditorUtility.SetDirty(groupsUdonBehaviour);
+                }
+            }
+        }
+
+        private object GetVariable(FieldInfo[] fields, string variableName)
+        {
+            foreach (FieldInfo field in fields)
+            {
+                if (field.Name.Equals(variableName))
+                {
+                    return field.GetValue(groupsBehaviour);
+                }
+            }
+
+            return null;
+        }
+
+        private void SetVariable(FieldInfo[] fields, string variableName, object value)
+        {
+            foreach (FieldInfo field in fields)
+            {
+                if (field.Name.Equals(variableName))
+                {
+                    field.SetValue(groupsBehaviour, value);
+
+                    return;
+                }
             }
         }
 
@@ -278,9 +367,39 @@ namespace Varneon.UdonPrefabs.Essentials
                 GUILayout.Label("Varneon's UdonEssentials - Groups", EditorStyles.largeLabel);
             }
 
+            if (isPlayModeActive)
+            {
+                EditorGUILayout.HelpBox("Exit play mode to edit the groups", MessageType.Info);
+
+                return;
+            }
+
+            if (isPrefabInspector)
+            {
+                EditorGUILayout.HelpBox("Place this prefab in the scene to edit the groups", MessageType.Info);
+
+                DisplayGroupPreview();
+
+                return;
+            }
+
+            if (waitingForPrefabUnpack)
+            {
+                EditorGUILayout.HelpBox("Unpack this prefab to edit the groups", MessageType.Info);
+
+                if (GUILayout.Button("Unpack Prefab", GUILayout.Height(24)))
+                {
+                    PrefabUtility.UnpackPrefabInstance(groupsBehaviour.gameObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                }
+
+                DisplayGroupPreview();
+
+                return;
+            }
+
             EditorGUILayout.HelpBox("Define names of the groups and text assets containing the usernames of the members in that group below", MessageType.Info);
 
-            for (int i = 0; i < groups.Count; i++)
+            for (int i = 0; i < groups?.Count; i++)
             {
                 Group group = groups[i];
 
@@ -302,19 +421,11 @@ namespace Varneon.UdonPrefabs.Essentials
                         {
                             using (new GUILayout.VerticalScope())
                             {
-                                using (var scope = new EditorGUI.ChangeCheckScope())
-                                {
-                                    group.Name = EditorGUILayout.TextField("Name:", groups[i].Name);
+                                group.Name = EditorGUILayout.TextField("Name:", groups[i].Name);
 
-                                    group.Usernames = (TextAsset)EditorGUILayout.ObjectField("Username List:", group.Usernames, typeof(TextAsset), false);
+                                group.Usernames = (TextAsset)EditorGUILayout.ObjectField("Username List:", group.Usernames, typeof(TextAsset), false);
 
-                                    group.Arguments = EditorGUILayout.TextField("Arguments (WIP):", groups[i].Arguments);
-
-                                    if (scope.changed)
-                                    {
-                                        SetVariablesDirty();
-                                    }
-                                }
+                                group.Arguments = EditorGUILayout.TextField("Arguments (WIP):", groups[i].Arguments);
 
                                 using (new GUILayout.HorizontalScope())
                                 {
@@ -322,15 +433,7 @@ namespace Varneon.UdonPrefabs.Essentials
                                 }
                             }
 
-                            using (var scope = new EditorGUI.ChangeCheckScope())
-                            {
-                                group.Icon = (Sprite)EditorGUILayout.ObjectField(group.Icon, typeof(Sprite), false, new GUILayoutOption[] { GUILayout.Width(ThreeLines), GUILayout.Height(ThreeLines) });
-
-                                if (scope.changed)
-                                {
-                                    SetVariablesDirty();
-                                }
-                            }
+                            group.Icon = (Sprite)EditorGUILayout.ObjectField(group.Icon, typeof(Sprite), false, new GUILayoutOption[] { GUILayout.Width(ThreeLines), GUILayout.Height(ThreeLines) });
 
                             using (new GUILayout.VerticalScope())
                             {
@@ -397,6 +500,16 @@ namespace Varneon.UdonPrefabs.Essentials
                         SaveGroupsToUdonBehaviour();
                     }
                 }
+            }
+        }
+
+        private void DisplayGroupPreview()
+        {
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                GUILayout.Label("Groups:", EditorStyles.largeLabel);
+
+                GUILayout.Label(groupsPreviewText, EditorStyles.wordWrappedLabel);
             }
         }
     }
