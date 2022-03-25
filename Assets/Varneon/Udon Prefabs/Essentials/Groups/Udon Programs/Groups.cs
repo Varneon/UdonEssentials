@@ -421,11 +421,19 @@ namespace Varneon.UdonPrefabs.Essentials
                         {
                             using (new GUILayout.VerticalScope())
                             {
-                                group.Name = EditorGUILayout.TextField("Name:", groups[i].Name);
+                                using (var scope = new EditorGUI.ChangeCheckScope())
+                                {
+                                    group.Name = EditorGUILayout.TextField("Name:", groups[i].Name);
 
-                                group.Usernames = (TextAsset)EditorGUILayout.ObjectField("Username List:", group.Usernames, typeof(TextAsset), false);
+                                    group.Usernames = (TextAsset)EditorGUILayout.ObjectField("Username List:", group.Usernames, typeof(TextAsset), false);
 
-                                group.Arguments = EditorGUILayout.TextField("Arguments (WIP):", groups[i].Arguments);
+                                    group.Arguments = EditorGUILayout.TextField("Arguments (WIP):", groups[i].Arguments);
+
+                                    if (scope.changed)
+                                    {
+                                        SetVariablesDirty();
+                                    }
+                                }
 
                                 using (new GUILayout.HorizontalScope())
                                 {
