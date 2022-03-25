@@ -1085,11 +1085,6 @@ namespace Varneon.UdonPrefabs.Essentials
         private void OnEnable()
         {
             tunify = (Tunify)target;
-
-            UdonBehaviour ub = tunify.GetComponent<UdonBehaviour>();
-
-            ub.AllowCollisionOwnershipTransfer = false;
-            ub.SynchronizePosition = false;
         }
 
         public override void OnInspectorGUI()
