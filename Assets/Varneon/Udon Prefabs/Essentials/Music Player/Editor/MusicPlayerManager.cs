@@ -168,405 +168,386 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
         {
             if (EditorApplication.isPlaying) return;
 
-            GUILayout.BeginHorizontal(EditorStyles.helpBox, new GUILayoutOption[] { GUILayout.Height(175) });
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox, new GUILayoutOption[] { GUILayout.Height(175) }))
+            {
+                using (new GUILayout.VerticalScope())
+                {
+                    DrawBanner();
 
-            GUILayout.BeginVertical();
+                    using (new EditorGUI.DisabledScope(creatingNewPlaylist || renamingPlaylist))
+                    {
+                        DrawFieldMusicPlayers();
 
-            DrawBanner();
+                        DrawFieldLibraryFile();
+                    }
+                }
 
-            EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
+                using (new EditorGUI.DisabledScope(activeLibrary == null))
+                {
+                    DrawFieldPlaylistList();
+                }
+            }
 
-            DrawFieldMusicPlayers();
+            using (new EditorGUI.DisabledScope(creatingNewPlaylist || renamingPlaylist || activeLibrary == null))
+            {
+                DrawFieldPlaylistArguments();
 
-            DrawFieldLibraryFile();
+                DrawFieldSonglist();
 
-            EditorGUI.EndDisabledGroup();
+                GUILayout.FlexibleSpace();
 
-            GUILayout.EndVertical();
-
-            EditorGUI.BeginDisabledGroup(activeLibrary == null);
-
-            DrawFieldPlaylistList();
-
-            EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
-
-            GUILayout.EndHorizontal();
-
-            DrawFieldPlaylistArguments();
-
-            DrawFieldSonglist();
-
-            GUILayout.FlexibleSpace();
-
-            DrawFieldLibraryActions();
-
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.EndDisabledGroup();
+                DrawFieldLibraryActions();
+            }
         }
 
         #region Panels
         private void DrawFieldMusicPlayers()
         {
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUILayout.Label("Active Music Player:", GUILayout.Width(120));
-
-            DrawFieldHighlightPanel(player);
-
-            EditorGUI.BeginChangeCheck();
-
-            player = (Tunify)EditorGUILayout.ObjectField(player, typeof(Tunify), true);
-
-            if (EditorGUI.EndChangeCheck())
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                GetPlayerIndex();
+                GUILayout.Label("Active Music Player:");
 
-                RefreshPlayerStats();
+                BeginHorizontalHighlightPanel(player);
+
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    player = (Tunify)EditorGUILayout.ObjectField(player, typeof(Tunify), true);
+
+                    if (scope.changed)
+                    {
+                        GetPlayerIndex();
+
+                        RefreshPlayerStats();
+                    }
+                }
+
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    playerIndex = EditorGUILayout.Popup(playerIndex, playerNames, GUILayout.Width(120));
+
+                    if (scope.changed)
+                    {
+                        player = playersInScene[playerIndex];
+
+                        so.ApplyModifiedProperties();
+
+                        RefreshPlayerStats();
+                    }
+                }
+
+                GUILayout.EndHorizontal();
+
+                using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
+                {
+                    GUILayout.Label($"Songs: {playerSongCount} | Playlists: {playerPlaylistCount}");
+
+                    using (new EditorGUI.DisabledScope(player == null))
+                    {
+                        if (GUILayout.Button("Save To File", GUILayout.MaxWidth(85)))
+                        {
+                            SavePlayerPlaylistsToLibrary();
+                        }
+                    }
+                }
             }
-
-            EditorGUI.BeginChangeCheck();
-
-            playerIndex = EditorGUILayout.Popup(playerIndex, playerNames, GUILayout.Width(120));
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                player = playersInScene[playerIndex];
-
-                so.ApplyModifiedProperties();
-
-                RefreshPlayerStats();
-            }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label($"Songs: {playerSongCount} | Playlists: {playerPlaylistCount}");
-
-            EditorGUI.BeginDisabledGroup(player == null);
-
-            if (GUILayout.Button("Save To File", GUILayout.MaxWidth(85)))
-            {
-                SavePlayerPlaylistsToLibrary();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
         }
 
         private void DrawFieldLibraryFile()
         {
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUILayout.Label("Active Music Library:", GUILayout.Width(125));
-
-            DrawFieldHighlightPanel(proxyLibrary);
-
-            EditorGUI.BeginChangeCheck();
-
-            proxyLibrary = (MusicLibrary)EditorGUILayout.ObjectField(proxyLibrary, typeof(MusicLibrary), false);
-
-            if (EditorGUI.EndChangeCheck())
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                PendingChangesPrompt();
+                GUILayout.Label("Active Music Library:");
 
-                SetActiveLibrary(proxyLibrary);
+                BeginHorizontalHighlightPanel(proxyLibrary);
 
-                if (activeLibrary != null)
+                using (var scope = new EditorGUI.ChangeCheckScope())
                 {
-                    ImportPlaylistsFromLibrary();
+                    proxyLibrary = (MusicLibrary)EditorGUILayout.ObjectField(proxyLibrary, typeof(MusicLibrary), false);
+
+                    if (scope.changed)
+                    {
+                        PendingChangesPrompt();
+
+                        SetActiveLibrary(proxyLibrary);
+
+                        if (activeLibrary != null)
+                        {
+                            ImportPlaylistsFromLibrary();
+                        }
+                    }
                 }
-            }
 
-            if (GUILayout.Button("Browse", GUILayout.Width(60)))
-            {
-                PendingChangesPrompt();
+                if (GUILayout.Button("Browse", GUILayout.Width(60)))
+                {
+                    PendingChangesPrompt();
 
-                BrowseLibraryFile();
-            }
-            else if (GUILayout.Button("New", GUILayout.Width(40)))
-            {
-                PendingChangesPrompt();
+                    BrowseLibraryFile();
+                }
+                else if (GUILayout.Button("New", GUILayout.Width(40)))
+                {
+                    PendingChangesPrompt();
 
-                string path = EditorUtility.SaveFilePanelInProject("Create new music library file", "MusicLibrary", "asset", "Create new music library");
+                    string path = EditorUtility.SaveFilePanelInProject("Create new music library file", "MusicLibrary", "asset", "Create new music library");
 
-                CreateNewLibraryFile(path);
-            }
+                    CreateNewLibraryFile(path);
+                }
 
-            EditorGUI.BeginDisabledGroup(!activeLibrary);
-
-            if (isActiveLibraryDefault)
-            {
-                GUILayout.Label("Default Library", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
-            }
-            else if (GUILayout.Button("Set As Default", GUILayout.Width(100)))
-            {
-                SetActiveLibraryAsDefault();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
-
-            if(isActiveLibraryDemo)
-            {
-                GUI.color = Color.yellow;
-
-                GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-                GUI.color = Color.white;
-
-                GUILayout.Label("DemoMusicLibrary is part of UdonEssentials files and will get overwritten when updating the package! Please create a new playlist or change the name of the file if you want to use this library.", EditorStyles.wordWrappedLabel);
+                using (new EditorGUI.DisabledScope(!activeLibrary))
+                {
+                    if (isActiveLibraryDefault)
+                    {
+                        GUILayout.Label("Default Library", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
+                    }
+                    else if (GUILayout.Button("Set As Default", GUILayout.Width(100)))
+                    {
+                        SetActiveLibraryAsDefault();
+                    }
+                }
 
                 GUILayout.EndHorizontal();
-            }
 
-            GUILayout.EndVertical();
+                if (isActiveLibraryDemo)
+                {
+                    GUI.color = Color.yellow;
+
+                    using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
+                    {
+                        GUI.color = Color.white;
+
+                        GUILayout.Label("DemoMusicLibrary is part of UdonEssentials files and will get overwritten when updating the package! Please create a new playlist or change the name of the file if you want to use this library.", EditorStyles.wordWrappedLabel);
+                    }
+                }
+            }
         }
 
         private void DrawFieldPlaylistList()
         {
-            GUILayout.BeginVertical(new GUILayoutOption[] { GUILayout.Width(Screen.width / 2f) });
-
-            EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
-
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            scrollPosPlaylists = EditorGUILayout.BeginScrollView(scrollPosPlaylists);
-
-            so.Update();
-
-            playlistList.DoLayoutList();
-
-            so.ApplyModifiedProperties();
-
-            GUILayout.EndHorizontal();
-
-            EditorGUILayout.EndScrollView();
-
-            EditorGUI.EndDisabledGroup();
-
-            #region Playlist Actions
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            if (!creatingNewPlaylist && !renamingPlaylist)
+            using (new GUILayout.VerticalScope(new GUILayoutOption[] { GUILayout.Width(Screen.width / 2f) }))
             {
-                GUILayout.Label("Playlist Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
-
-                GUILayout.FlexibleSpace();
-
-                if (GUILayout.Button("Copy", GUILayout.Width(45)))
+                using (new EditorGUI.DisabledScope(creatingNewPlaylist || renamingPlaylist))
                 {
-                    tempPlaylist = new Playlist(Playlists[playlistList.index].Name);
-
-                    foreach (Song song in Songs)
+                    using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
                     {
-                        tempPlaylist.Songs.Add(song);
+                        using (var scope = new EditorGUILayout.ScrollViewScope(scrollPosPlaylists))
+                        {
+                            so.Update();
+
+                            playlistList.DoLayoutList();
+
+                            so.ApplyModifiedProperties();
+                        }
                     }
                 }
 
-                EditorGUI.BeginDisabledGroup(tempPlaylist.Equals(new Playlist()));
-
-                if (GUILayout.Button("Paste", GUILayout.Width(45)))
+                #region Playlist Actions
+                using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
                 {
-                    Playlists.Add(tempPlaylist);
-
-                    pendingChanges = true;
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                if (GUILayout.Button("Rename", GUILayout.Width(65)))
-                {
-                    newPlaylistName = Playlists[playlistList.index].Name;
-
-                    renamingPlaylist = true;
-                }
-
-                if (GUILayout.Button("Add", GUILayout.Width(40)))
-                {
-                    newPlaylistName = "New Playlist";
-
-                    creatingNewPlaylist = true;
-                }
-
-                EditorGUI.BeginDisabledGroup(Playlists.Count <= 1);
-
-                if (GUILayout.Button(new GUIContent("X", "Remove"), GUILayout.Width(20)))
-                {
-                    RemovePlaylist();
-
-                    pendingChanges = true;
-                }
-
-                EditorGUI.EndDisabledGroup();
-            }
-            else
-            {
-                GUILayout.Label("Playlist Name:");
-
-                newPlaylistName = EditorGUILayout.TextField(newPlaylistName);
-
-                if (GUILayout.Button(renamingPlaylist ? "Rename" : "Create", GUILayout.Width(70)))
-                {
-                    if (renamingPlaylist)
+                    if (!creatingNewPlaylist && !renamingPlaylist)
                     {
-                        WriteSongsToPlaylist(playlistList.index);
+                        GUILayout.Label("Playlist Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
 
-                        Playlists[playlistList.index] = new Playlist(newPlaylistName, Playlists[playlistList.index].Songs);
+                        GUILayout.FlexibleSpace();
+
+                        if (GUILayout.Button("Copy", GUILayout.Width(45)))
+                        {
+                            tempPlaylist = new Playlist(Playlists[playlistList.index].Name);
+
+                            foreach (Song song in Songs)
+                            {
+                                tempPlaylist.Songs.Add(song);
+                            }
+                        }
+
+                        using (new EditorGUI.DisabledScope(tempPlaylist.Equals(new Playlist())))
+                        {
+                            if (GUILayout.Button("Paste", GUILayout.Width(45)))
+                            {
+                                Playlists.Add(tempPlaylist);
+
+                                pendingChanges = true;
+                            }
+                        }
+
+                        if (GUILayout.Button("Rename", GUILayout.Width(65)))
+                        {
+                            newPlaylistName = Playlists[playlistList.index].Name;
+
+                            renamingPlaylist = true;
+                        }
+
+                        if (GUILayout.Button("Add", GUILayout.Width(40)))
+                        {
+                            newPlaylistName = "New Playlist";
+
+                            creatingNewPlaylist = true;
+                        }
+
+                        using (new EditorGUI.DisabledScope(Playlists.Count <= 1))
+                        {
+                            if (GUILayout.Button(new GUIContent("X", "Remove"), GUILayout.Width(20)))
+                            {
+                                RemovePlaylist();
+
+                                pendingChanges = true;
+                            }
+                        }
                     }
                     else
                     {
-                        Playlists.Add(new Playlist(newPlaylistName));
+                        GUILayout.Label("Playlist Name:");
+
+                        newPlaylistName = EditorGUILayout.TextField(newPlaylistName);
+
+                        if (GUILayout.Button(renamingPlaylist ? "Rename" : "Create", GUILayout.Width(70)))
+                        {
+                            if (renamingPlaylist)
+                            {
+                                WriteSongsToPlaylist(playlistList.index);
+
+                                Playlists[playlistList.index] = new Playlist(newPlaylistName, Playlists[playlistList.index].Songs);
+                            }
+                            else
+                            {
+                                Playlists.Add(new Playlist(newPlaylistName));
+                            }
+
+                            pendingChanges = true;
+
+                            ResetPlaylistNameField();
+                        }
+                        else if (GUILayout.Button("Cancel", GUILayout.Width(70)))
+                        {
+                            ResetPlaylistNameField();
+                        }
                     }
-
-                    pendingChanges = true;
-
-                    ResetPlaylistNameField();
                 }
-                else if (GUILayout.Button("Cancel", GUILayout.Width(70)))
-                {
-                    ResetPlaylistNameField();
-                }
+                #endregion
             }
-
-            GUILayout.EndHorizontal();
-            #endregion
-
-            GUILayout.EndVertical();
         }
 
         private void DrawFieldPlaylistArguments()
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            EditorGUI.BeginChangeCheck();
-
-            playlistArguments.UseAutoplay = GUILayout.Toggle(playlistArguments.UseAutoplay, new GUIContent("Autoplay", "Can this playlist be played automatically at the beginning of the instance or randomly selected while playlist shuffle is active"), GUILayout.ExpandWidth(false));
-
-            playlistArguments.IsCopyrighted = GUILayout.Toggle(playlistArguments.IsCopyrighted, new GUIContent("Copyrighted", "Does this playlist contain copyrighted content that could potentially lead to issues in e.g. livestreams or videos"), GUILayout.ExpandWidth(false));
-
-            if (EditorGUI.EndChangeCheck())
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
             {
-                Playlist playlist = Playlists[playlistList.index];
+                EditorGUI.BeginChangeCheck();
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    playlistArguments.UseAutoplay = GUILayout.Toggle(playlistArguments.UseAutoplay, new GUIContent("Autoplay", "Can this playlist be played automatically at the beginning of the instance or randomly selected while playlist shuffle is active"), GUILayout.ExpandWidth(false));
 
-                playlist.Args = GeneratePlaylistArgumentString(playlistArguments);
+                    playlistArguments.IsCopyrighted = GUILayout.Toggle(playlistArguments.IsCopyrighted, new GUIContent("Copyrighted", "Does this playlist contain copyrighted content that could potentially lead to issues in e.g. livestreams or videos"), GUILayout.ExpandWidth(false));
 
-                Playlists[playlistList.index] = playlist;
+                    if (scope.changed)
+                    {
+                        Playlist playlist = Playlists[playlistList.index];
 
-                pendingChanges = true;
+                        playlist.Args = GeneratePlaylistArgumentString(playlistArguments);
+
+                        Playlists[playlistList.index] = playlist;
+
+                        pendingChanges = true;
+                    }
+                }
+
+                GUILayout.Label(new GUIContent("Description:", "Playlist description"), GUILayout.Width(72));
+
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    playlistDescription = GUILayout.TextField(playlistDescription);
+
+                    if (scope.changed)
+                    {
+                        Playlist playlist = Playlists[playlistList.index];
+
+                        playlist.Description = playlistDescription;
+
+                        Playlists[playlistList.index] = playlist;
+
+                        pendingChanges = true;
+                    }
+                }
             }
-
-            GUILayout.Label(new GUIContent("Description:", "Playlist description"), GUILayout.Width(72));
-
-            EditorGUI.BeginChangeCheck();
-
-            playlistDescription = GUILayout.TextField(playlistDescription);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                Playlist playlist = Playlists[playlistList.index];
-
-                playlist.Description = playlistDescription;
-
-                Playlists[playlistList.index] = playlist;
-
-                pendingChanges = true;
-            }
-
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawFieldSonglist()
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            scrollPosSongs = EditorGUILayout.BeginScrollView(scrollPosSongs);
-
-            EditorGUI.BeginChangeCheck();
-
-            so.Update();
-
-            songList.DoLayoutList();
-
-            so.ApplyModifiedProperties();
-
-            if (EditorGUI.EndChangeCheck())
+            using ( new GUILayout.HorizontalScope(EditorStyles.helpBox))
             {
-                WriteSongsToPlaylist(playlistList.index);
+                using (var scrollView = new EditorGUILayout.ScrollViewScope(scrollPosSongs))
+                {
+                    using (var scope = new EditorGUI.ChangeCheckScope())
+                    {
+                        so.Update();
 
-                pendingChanges = true;
+                        songList.DoLayoutList();
+
+                        so.ApplyModifiedProperties();
+
+                        if (scope.changed)
+                        {
+                            WriteSongsToPlaylist(playlistList.index);
+
+                            pendingChanges = true;
+                        }
+                    }
+                }
             }
-
-            EditorGUILayout.EndScrollView();
-
-            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawFieldLibraryActions()
         {
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            GUILayout.Label("Library Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
-
-            GUILayout.FlexibleSpace();
-
-            GUI.color = pendingChanges ? new Color(0.75f, 0.5f, 0f) : new Color(0f, 0.75f, 0f);
-
-            GUILayout.Label(pendingChanges ? "Unsaved Changes!" : "Everything Saved!", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
-
-            GUI.color = Color.white;
-
-            EditorGUI.BeginDisabledGroup(!pendingChanges);
-
-            if (GUILayout.Button("Save Library", GUILayout.MaxWidth(90)))
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
             {
-                SaveMusicLibrary();
+                GUILayout.Label("Library Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
+
+                GUILayout.FlexibleSpace();
+
+                GUI.color = pendingChanges ? new Color(0.75f, 0.5f, 0f) : new Color(0f, 0.75f, 0f);
+
+                GUILayout.Label(pendingChanges ? "Unsaved Changes!" : "Everything Saved!", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
+
+                GUI.color = Color.white;
+
+                using (new EditorGUI.DisabledScope(!pendingChanges))
+                {
+                    if (GUILayout.Button("Save Library", GUILayout.MaxWidth(90)))
+                    {
+                        SaveMusicLibrary();
+                    }
+                }
+
+                using (new EditorGUI.DisabledScope(player == null))
+                {
+                    if (GUILayout.Button("Apply Library To Player", GUILayout.MaxWidth(150)))
+                    {
+                        ApplyPlaylistsToPlayer();
+                    }
+                }
             }
-
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.BeginDisabledGroup(player == null);
-
-            if (GUILayout.Button("Apply Library To Player", GUILayout.MaxWidth(150)))
-            {
-                ApplyPlaylistsToPlayer();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
         }
 
         private void DrawBanner()
         {
             GUI.color = new Color(0f, 0.5f, 1f);
 
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUI.color = Color.white;
-
-            GUILayout.Label("Varneon's Udon Prefabs", EditorStyles.whiteLargeLabel);
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
-
-            if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                Application.OpenURL("https://github.com/Varneon");
+                GUI.color = Color.white;
+
+                GUILayout.Label("Varneon's Udon Prefabs", EditorStyles.whiteLargeLabel);
+
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
+
+                    if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+                    {
+                        Application.OpenURL("https://github.com/Varneon");
+                    }
+                }
             }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
         }
 
-        private void DrawFieldHighlightPanel(object obj)
+        private void BeginHorizontalHighlightPanel(object obj)
         {
             GUI.color = obj == null ? new Color(1f, 0f, 0f) : Color.white;
 
