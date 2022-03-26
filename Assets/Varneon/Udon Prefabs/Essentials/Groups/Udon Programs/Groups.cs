@@ -194,6 +194,8 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private bool waitingForPrefabUnpack;
 
+        private bool invalidBehaviour;
+
         private const string NamelistPaddingTemplate = "\n{0}\n";
 
         private struct Group
@@ -212,6 +214,11 @@ namespace Varneon.UdonPrefabs.Essentials
             groupsBehaviour = (Groups)target;
 
             groupsUdonBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(groupsBehaviour);
+
+            if(invalidBehaviour = groupsUdonBehaviour == null)
+            {
+                return;
+            }
 
             IUdonVariableTable variables = groupsUdonBehaviour.publicVariables;
 
@@ -365,6 +372,13 @@ namespace Varneon.UdonPrefabs.Essentials
             using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
             {
                 GUILayout.Label("Varneon's UdonEssentials - Groups", EditorStyles.largeLabel);
+            }
+
+            if (invalidBehaviour)
+            {
+                EditorGUILayout.HelpBox("Use the Groups prefab provided in Assets/Varneon/Udon Prefabs/Essentials/Groups", MessageType.Error);
+
+                return;
             }
 
             if (isPlayModeActive)
