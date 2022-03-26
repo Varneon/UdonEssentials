@@ -8,8 +8,10 @@ using UnityEditorInternal;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
 using Playlist = Varneon.UdonPrefabs.Essentials.MusicPlayerEditor.MusicLibrary.Playlist;
 using Song = Varneon.UdonPrefabs.Essentials.MusicPlayerEditor.MusicLibrary.Song;
+using Object = UnityEngine.Object;
 
 namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
 {
@@ -884,7 +886,13 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
                 if (copyrightFreePlaylistIndices.Contains(index)) { autoplayCopyrightFreePlaylistIndices.Add(index); }
             }
 
-            Undo.RecordObject(player.GetComponent<UdonBehaviour>(), "Apply music library to player");
+            UdonBehaviour udonBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(player);
+
+            IUdonVariableTable variables = udonBehaviour.publicVariables;
+
+            bool isUdonSharpOne = variables.TryGetVariableValue("___UdonSharpBehaviourVersion___", out _);
+
+            Undo.RecordObject(isUdonSharpOne ? player : (Object)udonBehaviour, "Apply music library to player");
 
             player.Urls = urls.ToArray();
             player.Titles = titles.ToArray();
@@ -898,9 +906,12 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
             player.CopyrightFreePlaylistIndices = copyrightFreePlaylistIndices.ToArray();
             player.AutoplayCopyrightFreePlaylistIndices = autoplayCopyrightFreePlaylistIndices.ToArray();
 
-            player.ApplyProxyModifications();
+            if(!isUdonSharpOne)
+            {
+                player.ApplyProxyModifications();
+            }
 
-            Undo.PerformRedo(); //Hacky workaround to apply variables to UdonBehaviours on prefabs
+            EditorUtility.SetDirty(isUdonSharpOne ? player : (Object)udonBehaviour);
 
             RefreshPlayerStats();
 
