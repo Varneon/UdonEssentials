@@ -11,6 +11,7 @@ using VRC.Udon.Common.Interfaces;
 using System;
 using VRC.Udon.Common;
 using System.Reflection;
+using JetBrains.Annotations;
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
 using UdonSharpEditor;
@@ -60,6 +61,7 @@ namespace Varneon.UdonPrefabs.Essentials
             name = "Varneon.UdonPrefabs.Essentials.Groups";
         }
 
+        [PublicAPI]
         /// <summary>
         /// Gets indices of the groups that the player with the provided name is part of
         /// </summary>
@@ -74,6 +76,7 @@ namespace Varneon.UdonPrefabs.Essentials
             return memberGroupIndices[memberList.Substring(0, lookupPos).Split(NewlineChars).Length - 1];
         }
 
+        [PublicAPI]
         /// <summary>
         /// Gets the icon sprite of the group with the index of groupIndex
         /// </summary>
@@ -86,6 +89,7 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupIcons[groupIndex];
         }
 
+        [PublicAPI]
         /// <summary>
         /// Gets the name of the group with the index of groupIndex
         /// </summary>
@@ -98,6 +102,7 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupNames[groupIndex];
         }
 
+        [PublicAPI]
         /// <summary>
         /// Gets the tags of the group with the index of groupIndex
         /// </summary>
@@ -110,6 +115,7 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupArguments[groupIndex];
         }
 
+        [PublicAPI]
         /// <summary>
         /// Gets all of the player names in the group
         /// </summary>
@@ -122,6 +128,7 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupUsernames[groupIndex].text.Split(NewlineChars);
         }
 
+        [PublicAPI]
         /// <summary>
         /// Runtime method for adding players into groups
         /// </summary>
