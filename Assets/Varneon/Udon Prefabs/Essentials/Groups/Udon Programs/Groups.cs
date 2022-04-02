@@ -52,12 +52,8 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private const string NamePaddingTemplate = "\n{0}\n";
 
-#pragma warning disable IDE0052 // Variable is only used for the custom inspector
-
         [SerializeField, HideInInspector]
         private TextAsset[] groupUsernames = new TextAsset[0];
-
-#pragma warning restore IDE0052
 
         private void Start()
         {
