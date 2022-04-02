@@ -109,6 +109,16 @@ namespace Varneon.UdonPrefabs.Essentials
         }
 
         /// <summary>
+        /// Gets all of the player names in the group
+        /// </summary>
+        /// <param name="groupIndex"></param>
+        /// <returns>String array containing all of the player names, will not return null</returns>
+        public string[] _GetPlayerNamesInGroup(int groupIndex)
+        {
+            return groupUsernames[groupIndex].text.Split(NewlineChars);
+        }
+
+        /// <summary>
         /// Runtime method for adding players into groups
         /// </summary>
         /// <param name="groupName"></param>
