@@ -68,7 +68,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// Gets indices of the groups that the player with the provided name is part of
         /// </summary>
         /// <param name="playerId"></param>
-        /// <returns></returns>
+        /// <returns>Group indices of the player, will not return null</returns>
         public int[] _GetGroupIndicesOfPlayer(string displayName)
         {
             int lookupPos = GetPlayerLookupIndex(displayName);
@@ -82,9 +82,11 @@ namespace Varneon.UdonPrefabs.Essentials
         /// Gets the icon sprite of the group with the index of groupIndex
         /// </summary>
         /// <param name="groupIndex"></param>
-        /// <returns></returns>
+        /// <returns>Group icon sprite, can return null</returns>
         public Sprite _GetGroupIcon(int groupIndex)
         {
+            if (!IsIndexWithinArrayRange(groupIndex, groupIcons)) { return null; }
+
             return groupIcons[groupIndex];
         }
 
@@ -92,9 +94,11 @@ namespace Varneon.UdonPrefabs.Essentials
         /// Gets the name of the group with the index of groupIndex
         /// </summary>
         /// <param name="groupIndex"></param>
-        /// <returns></returns>
+        /// <returns>Name of the group, will not return null</returns>
         public string _GetGroupName(int groupIndex)
         {
+            if (!IsIndexWithinArrayRange(groupIndex, groupNames)) { return string.Empty; }
+
             return groupNames[groupIndex];
         }
 
@@ -102,9 +106,11 @@ namespace Varneon.UdonPrefabs.Essentials
         /// Gets the tags of the group with the index of groupIndex
         /// </summary>
         /// <param name="groupIndex"></param>
-        /// <returns></returns>
+        /// <returns>Group arguments, will not return null</returns>
         public string _GetGroupArguments(int groupIndex)
         {
+            if (!IsIndexWithinArrayRange(groupIndex, groupArguments)) { return string.Empty; }
+
             return groupArguments[groupIndex];
         }
 
@@ -115,6 +121,8 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <returns>String array containing all of the player names, will not return null</returns>
         public string[] _GetPlayerNamesInGroup(int groupIndex)
         {
+            if (!IsIndexWithinArrayRange(groupIndex, groupUsernames)) { return new string[0]; }
+
             return groupUsernames[groupIndex].text.Split(NewlineChars);
         }
 
@@ -176,6 +184,11 @@ namespace Varneon.UdonPrefabs.Essentials
         private int GetPlayerLookupIndex(string displayName)
         {
             return memberList.IndexOf(string.Format(NamePaddingTemplate, displayName));
+        }
+
+        private bool IsIndexWithinArrayRange(int index, object[] array)
+        {
+            return index >= 0 && index < array.Length;
         }
     }
 
