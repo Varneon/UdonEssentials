@@ -125,7 +125,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             if (!IsIndexWithinArrayRange(groupIndex, groupUsernames)) { return new string[0]; }
 
-            return groupUsernames[groupIndex].text.Split(NewlineChars);
+            return groupUsernames[groupIndex].text.Split(NewlineChars, StringSplitOptions.RemoveEmptyEntries);
         }
 
         [PublicAPI]
