@@ -157,23 +157,25 @@ namespace Varneon.UdonPrefabs.Essentials
                         );
 
                     customColorApplied = true;
+
+                    if (shownGroupCount == 2) { break; }
                 }
 
-                GameObject imageGO = playlistPanel.GetChild(shownGroupCount == 0 ? INDEX_GROUP1 : INDEX_GROUP2).gameObject;
-
-                if (!groupArguments.Contains("-noPlayerlistIcon"))
+                if (shownGroupCount < 2)
                 {
-                    Sprite icon = groups._GetGroupIcon(groupIndex);
+                    GameObject imageGO = playlistPanel.GetChild(shownGroupCount == 0 ? INDEX_GROUP1 : INDEX_GROUP2).gameObject;
 
-                    if (icon != null)
+                    if (!groupArguments.Contains("-noPlayerlistIcon"))
                     {
-                        imageGO.SetActive(true);
+                        Sprite icon = groups._GetGroupIcon(groupIndex);
 
-                        imageGO.GetComponent<Image>().sprite = icon;
-
-                        if (++shownGroupCount >= 2)
+                        if (icon != null)
                         {
-                            break;
+                            imageGO.SetActive(true);
+
+                            imageGO.GetComponent<Image>().sprite = icon;
+
+                            shownGroupCount++;
                         }
                     }
                 }

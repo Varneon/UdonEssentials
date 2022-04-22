@@ -1082,26 +1082,25 @@ namespace Varneon.UdonPrefabs.Essentials
     {
         private Tunify tunify;
 
+        private bool invalidPrefabOrBehaviour;
+
         private void OnEnable()
         {
             tunify = (Tunify)target;
 
-            UdonBehaviour ub = tunify.GetComponent<UdonBehaviour>();
-
-            if (ub == null)
-            {
-                UdonSharpEditorUtility.ConvertToUdonBehaviours(new UdonSharpBehaviour[] { tunify });
-
-                return;
-            }
-
-            ub.AllowCollisionOwnershipTransfer = false;
-            ub.SynchronizePosition = false;
+            invalidPrefabOrBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(tunify) == null || tunify.transform.childCount < 1;
         }
 
         public override void OnInspectorGUI()
         {
             DrawBanner();
+
+            if (invalidPrefabOrBehaviour)
+            {
+                EditorGUILayout.HelpBox("Use the Tunify prefab provided in Assets/Varneon/Udon Prefabs/Essentials/Music Player", MessageType.Error);
+
+                return;
+            }
 
             if (tunify.transform.localScale.normalized != Vector3.one.normalized || tunify.transform.GetChild(0).localScale.normalized != Vector3.one.normalized) { DrawScaleWarning(); }
 
