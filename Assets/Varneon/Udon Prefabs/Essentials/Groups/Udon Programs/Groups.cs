@@ -56,11 +56,6 @@ namespace Varneon.UdonPrefabs.Essentials
         [SerializeField, HideInInspector]
         private TextAsset[] groupUsernames = new TextAsset[0];
 
-        private void Start()
-        {
-            name = "Varneon.UdonPrefabs.Essentials.Groups";
-        }
-
         [PublicAPI]
         /// <summary>
         /// Gets indices of the groups that the player with the provided name is part of
