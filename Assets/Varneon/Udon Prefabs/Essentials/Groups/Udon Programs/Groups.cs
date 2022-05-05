@@ -217,6 +217,8 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private bool invalidBehaviour;
 
+        private bool previewGroupsData;
+
         private const string NamelistPaddingTemplate = "\n{0}\n";
 
         private struct Group
@@ -245,7 +247,11 @@ namespace Varneon.UdonPrefabs.Essentials
 
             isUdonSharpOne = variables.TryGetVariableValue("___UdonSharpBehaviourVersion___", out _);
 
-            if (PrefabUtility.IsPartOfPrefabInstance(groupsUdonBehaviour))
+            if(UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage() != null || PrefabUtility.IsPartOfPrefabAsset(groupsBehaviour))
+            {
+                isPrefabInspector = true;
+            }
+            else if (PrefabUtility.IsPartOfPrefabInstance(groupsUdonBehaviour))
             {
                 waitingForPrefabUnpack = true;
             }
@@ -279,12 +285,7 @@ namespace Varneon.UdonPrefabs.Essentials
                 groups.Add(new Group() { Name = groupNames[i], Icon = groupIcons[i], Usernames = groupUsernames[i], Arguments = groupArguments[i] });
             }
 
-            if (PrefabUtility.IsPartOfPrefabAsset(groupsBehaviour) || UnityEditor.Experimental.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage() != null || waitingForPrefabUnpack)
-            {
-                isPrefabInspector = !waitingForPrefabUnpack;
-
-                groupsPreviewText = string.Join("\n\n", groups.Select(c => $"{c.Name}:\n{string.Join("\n", c.Usernames.text)}").ToArray());
-            }
+            groupsPreviewText = string.Join("\n\n", groups.Select(c => $"{c.Name}:\n{string.Join("\n", c.Usernames.text)}").ToArray());
         }
 
         private void SaveGroupsToUdonBehaviour()
@@ -542,6 +543,16 @@ namespace Varneon.UdonPrefabs.Essentials
                         isDirty = false;
                         SaveGroupsToUdonBehaviour();
                     }
+                }
+            }
+
+            GUILayout.Space(20);
+
+            using (new EditorGUI.IndentLevelScope(1))
+            {
+                if (previewGroupsData = EditorGUILayout.Foldout(previewGroupsData, "Groups Data Preview", true))
+                {
+                    DisplayGroupPreview();
                 }
             }
         }
