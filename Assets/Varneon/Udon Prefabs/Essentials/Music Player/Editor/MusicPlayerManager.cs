@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UdonSharp;
 using UdonSharpEditor;
@@ -1012,4 +1011,3 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
         #endregion
     }
 }
-#endif
