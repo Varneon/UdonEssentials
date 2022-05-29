@@ -332,6 +332,8 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
                     {
                         using (var scope = new EditorGUILayout.ScrollViewScope(scrollPosPlaylists))
                         {
+                            scrollPosPlaylists = scope.scrollPosition;
+
                             so.Update();
 
                             playlistList.DoLayoutList();
@@ -476,6 +478,8 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
             {
                 using (var scrollView = new EditorGUILayout.ScrollViewScope(scrollPosSongs))
                 {
+                    scrollPosSongs = scrollView.scrollPosition;
+
                     using (var scope = new EditorGUI.ChangeCheckScope())
                     {
                         so.Update();
