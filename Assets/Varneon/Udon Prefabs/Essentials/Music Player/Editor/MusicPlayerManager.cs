@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UdonSharp;
 using UdonSharpEditor;
 using UnityEditor;
@@ -605,7 +606,18 @@ namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
 
                 preferences.DefaultLibrary = activeLibrary;
 
-                AssetDatabase.CreateAsset(preferences, $"Assets/Varneon/Udon Prefabs/Essentials/Music Player/Resources/Preferences.asset");
+                string path = "Assets/Varneon/Udon Prefabs/Essentials/Music Player/Resources/Preferences.asset";
+
+                string directory = Path.GetDirectoryName(path);
+
+                Debug.Log(directory);
+
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                AssetDatabase.CreateAsset(preferences, path);
 
                 SaveAsset(preferences);
 
