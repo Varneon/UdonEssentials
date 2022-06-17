@@ -17,7 +17,7 @@ UdonEssentials is an evergrowing collection of Udon prefabs for VRChat worlds th
 
 If you would like to test the prefabs in game, feel free to visit this world: https://vrchat.com/home/world/wrld_62e85ddd-65be-4676-83bd-3879347f4eb5
 
-List of the prefabs:
+## List of the prefabs:
 | Name | Description | Set-up difficulty |
 | ------------- |:-------------:| -----:|
 | Simple Player Settings | Simple, but more advanced replacement for the original "VRCWorldSettings" UdonBehaviour that ships with VRCSDK | Drag & Drop |
@@ -25,6 +25,7 @@ List of the prefabs:
 | Music Player | Music player that allows world creators to create playlists for their worlds for everyone to listen to | Beginner |
 | Groups | UdonBehaviour for establishing in-game groups which can be accessed from other UdonBehaviours | Beginner |
 | Console | In-game console for showing custom logs in realtime while inside the world | Intermediate |
+| Event Dispatcher | Dispatcher for allowing UdonSharpBehaviours to receive delegated update events | Advanced |
 
 ## How to use:
 ### Prerequisites:
