@@ -1,5 +1,4 @@
-﻿
-#pragma warning disable IDE0044 // Making serialized fields readonly hides them from the inspector
+﻿#pragma warning disable IDE0044 // Making serialized fields readonly hides them from the inspector
 #pragma warning disable IDE1006 // VRChat public method network execution prevention using underscore
 #pragma warning disable 649
 
@@ -28,12 +27,24 @@ namespace Varneon.UdonPrefabs.Essentials
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class Groups : UdonSharpBehaviour
     {
+        /// <summary>
+        /// Names of the groups
+        /// </summary>
         [SerializeField, HideInInspector]
         private string[] groupNames = new string[0];
 
+        /// <summary>
+        /// Icons of the groups
+        /// </summary>
         [SerializeField, HideInInspector]
         private Sprite[] groupIcons = new Sprite[0];
 
+        /// <summary>
+        /// Arguments of the groups
+        /// </summary>
+        /// <remarks>
+        /// e.g. "-playerlistFrameColor#ABCDEF -noPlayerlistIcon"
+        /// </remarks>
         [SerializeField, HideInInspector]
         private string[] groupArguments = new string[0];
 
@@ -49,19 +60,28 @@ namespace Varneon.UdonPrefabs.Essentials
         [SerializeField, HideInInspector]
         private int[][] memberGroupIndices = new int[0][];
 
+        /// <summary>
+        /// Possible newline characters
+        /// </summary>
         private readonly char[] NewlineChars = new char[] { '\n', '\r' };
 
+        /// <summary>
+        /// Template for the padding of each display name in line-separated strings
+        /// </summary>
         private const string NamePaddingTemplate = "\n{0}\n";
 
+        /// <summary>
+        /// Text assets containing the display names for each player in the groups
+        /// </summary>
         [SerializeField, HideInInspector]
         private TextAsset[] groupUsernames = new TextAsset[0];
 
-        [PublicAPI]
         /// <summary>
-        /// Gets indices of the groups that the player with the provided name is part of
+        /// Get indices of the groups that the player with the provided name is part of
         /// </summary>
-        /// <param name="playerId"></param>
-        /// <returns>Group indices of the player, will not return null</returns>
+        /// <param name="displayName">Display name of the player</param>
+        /// <returns>Int32 array containing all of the indices for the groups</returns>
+        [PublicAPI]
         public int[] _GetGroupIndicesOfPlayer(string displayName)
         {
             int lookupPos = GetPlayerLookupIndex(displayName);
@@ -71,12 +91,15 @@ namespace Varneon.UdonPrefabs.Essentials
             return memberGroupIndices[memberList.Substring(0, lookupPos).Split(NewlineChars).Length - 1];
         }
 
-        [PublicAPI]
         /// <summary>
-        /// Gets the icon sprite of the group with the index of groupIndex
+        /// Get the icon of a group
         /// </summary>
-        /// <param name="groupIndex"></param>
-        /// <returns>Group icon sprite, can return null</returns>
+        /// <remarks>
+        /// Returns null if index was outside of range or group doesn't have an icon
+        /// </remarks>
+        /// <param name="groupIndex">Index of the group</param>
+        /// <returns>Icon of the group as Sprite</returns>
+        [PublicAPI]
         public Sprite _GetGroupIcon(int groupIndex)
         {
             if (!IsIndexWithinArrayRange(groupIndex, groupIcons)) { return null; }
@@ -84,12 +107,15 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupIcons[groupIndex];
         }
 
-        [PublicAPI]
         /// <summary>
-        /// Gets the name of the group with the index of groupIndex
+        /// Get the name of a group
         /// </summary>
-        /// <param name="groupIndex"></param>
-        /// <returns>Name of the group, will not return null</returns>
+        /// <remarks>
+        /// Returns string.Empty if index was outside of range
+        /// </remarks>
+        /// <param name="groupIndex">Index of the group</param>
+        /// <returns>Name of the group</returns>
+        [PublicAPI]
         public string _GetGroupName(int groupIndex)
         {
             if (!IsIndexWithinArrayRange(groupIndex, groupNames)) { return string.Empty; }
@@ -97,12 +123,15 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupNames[groupIndex];
         }
 
-        [PublicAPI]
         /// <summary>
-        /// Gets the tags of the group with the index of groupIndex
+        /// Get the arguments of a group
         /// </summary>
-        /// <param name="groupIndex"></param>
-        /// <returns>Group arguments, will not return null</returns>
+        /// <remarks>
+        /// Returns string.Empty if index was outside of range
+        /// </remarks>
+        /// <param name="groupIndex">Index of the group</param>
+        /// <returns>Arguments of a group</returns>
+        [PublicAPI]
         public string _GetGroupArguments(int groupIndex)
         {
             if (!IsIndexWithinArrayRange(groupIndex, groupArguments)) { return string.Empty; }
@@ -110,12 +139,15 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupArguments[groupIndex];
         }
 
-        [PublicAPI]
         /// <summary>
-        /// Gets all of the player names in the group
+        /// Get the names of players in a group. Doesn't return players added via _AddPlayersToGroup()
         /// </summary>
+        /// <remarks>
+        /// Returns empty array if index was outside of range
+        /// </remarks>
         /// <param name="groupIndex"></param>
-        /// <returns>String array containing all of the player names, will not return null</returns>
+        /// <returns>String array containing the names of all of the players in a group</returns>
+        [PublicAPI]
         public string[] _GetPlayerNamesInGroup(int groupIndex)
         {
             if (!IsIndexWithinArrayRange(groupIndex, groupUsernames)) { return new string[0]; }
@@ -123,12 +155,12 @@ namespace Varneon.UdonPrefabs.Essentials
             return groupUsernames[groupIndex].text.Split(NewlineChars, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        [PublicAPI]
         /// <summary>
-        /// Runtime method for adding players into groups
+        /// Runtime method for adding players manually to a group
         /// </summary>
-        /// <param name="groupName"></param>
-        /// <param name="displayNames"></param>
+        /// <param name="groupName">Name of the group</param>
+        /// <param name="displayNames">Display names of the players</param>
+        [PublicAPI]
         public void _AddPlayersToGroup(string groupName, string[] displayNames)
         {
             int groupIndex = 0;
@@ -149,6 +181,11 @@ namespace Varneon.UdonPrefabs.Essentials
             }
         }
 
+        /// <summary>
+        /// Add a player to a group
+        /// </summary>
+        /// <param name="groupIndex">Index of the group</param>
+        /// <param name="displayName">Display name of the player</param>
         private void AddPlayerToGroup(int groupIndex, string displayName)
         {
             int playerLookupIndex = GetPlayerLookupIndex(displayName);
@@ -179,11 +216,22 @@ namespace Varneon.UdonPrefabs.Essentials
             }
         }
 
+        /// <summary>
+        /// Get the lookup index of a player
+        /// </summary>
+        /// <param name="displayName">Display name of the player</param>
+        /// <returns>Lookup index for finding player's group indices via _GetGroupIndicesOfPlayer()</returns>
         private int GetPlayerLookupIndex(string displayName)
         {
             return memberList.IndexOf(string.Format(NamePaddingTemplate, displayName));
         }
 
+        /// <summary>
+        /// Checks whether the index is within the array's range or not
+        /// </summary>
+        /// <param name="index">Index</param>
+        /// <param name="array">Array</param>
+        /// <returns>Is the index within the range of the array</returns>
         private bool IsIndexWithinArrayRange(int index, object[] array)
         {
             return index >= 0 && index < array.Length;
