@@ -1023,6 +1023,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -5280264343536135722, guid: 412e7d4f2361a2844951e1a6a01d8de5,
         type: 3}
+      propertyPath: Logger
+      value: 
+      objectReference: {fileID: 1471258580}
+    - target: {fileID: -5280264343536135722, guid: 412e7d4f2361a2844951e1a6a01d8de5,
+        type: 3}
       propertyPath: Console
       value: 
       objectReference: {fileID: 1471258580}
