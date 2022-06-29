@@ -8,6 +8,7 @@ using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
+using Varneon.UdonPrefabs.Abstract;
 
 namespace Varneon.UdonPrefabs.RuntimeTools
 {
@@ -16,7 +17,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
     /// </summary>
     [DefaultExecutionOrder(-2146483648)]
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
-    public class UdonConsole : UdonSharpBehaviour
+    public class UdonConsole : UdonLogger
     {
         #region Variables
 
@@ -62,16 +63,6 @@ namespace Varneon.UdonPrefabs.RuntimeTools
             JOIN_PREFIX = "[<color=lime>JOIN</color>]",
             LEAVE_PREFIX = "[<color=red>LEAVE</color>]";
 
-        private const string
-            LOGTYPE_LOG = "LOG",
-            LOGTYPE_WARNING = "WARNING",
-            LOGTYPE_ERROR = "ERROR";
-
-        private const string
-            LOGTYPE_LOG_PREFIX = "<color=#666666>LOG</color>:",
-            LOGTYPE_WARNING_PREFIX = "<color=#FFFF00>WARNING</color>:",
-            LOGTYPE_ERROR_PREFIX = "<color=#FF0000>ERROR</color>:";
-
         private const string WHITESPACE = " ";
 
         private const int MAX_ENTRY_ADJUSTMENT_STEP = 10;
@@ -92,9 +83,13 @@ namespace Varneon.UdonPrefabs.RuntimeTools
             ToggleTimestamps.isOn = !ShowTimestamps;
             scrollbar = GetComponentInChildren<Scrollbar>(true);
             canvasRoot = GetComponentInChildren<Canvas>(true).GetComponent<RectTransform>();
+
             _Log($"{LOG_PREFIX} This is Varneon's Udon Essentials Console!");
             _LogWarning($"{LOG_PREFIX} It can show warnings if something is out of the ordinary");
             _LogError($"{LOG_PREFIX} And errors can also be shown if something goes completely wrong");
+            _Log($"{LOG_PREFIX} Context objects are also supported:", this);
+            _Log($"{LOG_PREFIX} As well as assertions:");
+            _Assert(false, null);
         }
 
         /// <summary>
@@ -118,7 +113,7 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
                 string[] info = item.name.Split(' ');
 
-                string type = info[0];
+                LogType type = (LogType)int.Parse(info[0]);
 
                 string timestamp = string.Join(WHITESPACE, new string[] { info[1], info[2] });
 
@@ -140,31 +135,40 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         /// </summary>
         /// <param name="logEntry"></param>
         /// <param name="type"></param>
-        private void SetLogEntryActive(GameObject logEntry, string type)
+        private void SetLogEntryActive(GameObject logEntry, LogType type)
         {
             logEntry.SetActive(
-                (type == LOGTYPE_LOG && !ToggleLog.isOn) ||
-                (type == LOGTYPE_WARNING && !ToggleWarning.isOn) ||
-                (type == LOGTYPE_ERROR && !ToggleError.isOn)
+                (type == LogType.Log && !ToggleLog.isOn) ||
+                (type == LogType.Warning && !ToggleWarning.isOn) ||
+                ((type == LogType.Error || type == LogType.Exception || type == LogType.Assert) && !ToggleError.isOn)
                 );
+        }
+
+        /// <summary>
+        /// Gets the current timestamp formatted as "yyyy.MM.dd HH:mm:ss"
+        /// </summary>
+        /// <returns>Formatted timestamp string</returns>
+        private string GetTimestamp()
+        {
+            return DateTime.UtcNow.ToLocalTime().ToString("yyyy.MM.dd HH:mm:ss");
         }
 
         /// <summary>
         /// Write line to the console
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="logType"></param>
         /// <param name="text"></param>
-        private void WriteLine(string type, string text)
+        private void WriteLine(LogType logType, string message)
         {
             Text textComponent;
 
             Transform newEntry;
 
-            string timestamp = DateTime.UtcNow.ToLocalTime().ToString("yyyy.MM.dd HH:mm:ss");
+            string timestamp = GetTimestamp();
 
             if (GetCurrentLogEntryCount() < MaxLogEntries)
             {
-                newEntry = VRCInstantiate(LogItem).transform;
+                newEntry = Instantiate(LogItem).transform;
                 newEntry.SetParent(LogWindow);
                 newEntry.localPosition = Vector3.zero;
                 newEntry.localRotation = Quaternion.identity;
@@ -178,40 +182,12 @@ namespace Varneon.UdonPrefabs.RuntimeTools
 
             GameObject newEntryGO = newEntry.gameObject;
 
-            newEntryGO.name = string.Join(WHITESPACE, new string[] { type, timestamp });
+            newEntryGO.name = string.Join(WHITESPACE, new string[] { ((int)logType).ToString(), timestamp });
             textComponent = newEntry.GetComponent<Text>();
 
-            string prefix = string.Empty;
+            textComponent.text = ShowTimestamps ? message : message.Substring(timestamp.Length + 1);
 
-            switch (type)
-            {
-                case LOGTYPE_LOG:
-                    prefix = LOGTYPE_LOG_PREFIX;
-                    break;
-                case LOGTYPE_WARNING:
-                    prefix = LOGTYPE_WARNING_PREFIX;
-                    break;
-                case LOGTYPE_ERROR:
-                    prefix = LOGTYPE_ERROR_PREFIX;
-                    break;
-            }
-
-            string[] message = ShowTimestamps ?
-                new string[]
-                {
-                    timestamp,
-                    prefix,
-                    text
-                } :
-                new string[]
-                {
-                    prefix,
-                    text
-                };
-
-            textComponent.text = string.Join(WHITESPACE, message);
-
-            SetLogEntryActive(newEntryGO, type);
+            SetLogEntryActive(newEntryGO, logType);
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(canvasRoot);
 
@@ -225,6 +201,16 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         private int GetCurrentLogEntryCount()
         {
             return LogWindow.childCount;
+        }
+
+        private string BuildLogStringOutput(LogType logType, object message)
+        {
+            return string.Join(" ", GetTimestamp(), GetLogTypePrefix(logType), MessageObjectToString(message));
+        }
+
+        private string BuildLogStringOutput(LogType logType, object message, UnityEngine.Object context)
+        {
+            return string.Join(" ", GetTimestamp(), GetLogTypePrefix(logType), MessageObjectToString(message), ContextObjectToString(context));
         }
         #endregion
 
@@ -249,38 +235,25 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         }
         #endregion
 
-        #region Logging Methods
-        /// <summary>
-        /// Log a message to the Udon Console
-        /// </summary>
-        /// <param name="message"></param>
-        public void _Log(object message)
+        #region Logger Overrides
+        protected override void Log(LogType logType, object message)
         {
-            if(ProxyEntriesToLogs) { Debug.Log(message); }
-
-            WriteLine(LOGTYPE_LOG, message.ToString());
+            WriteLine(logType, BuildLogStringOutput(logType, message));
         }
 
-        /// <summary>
-        /// A variant of _Log that logs a warning message to the Udon Console
-        /// </summary>
-        /// <param name="message"></param>
-        public void _LogWarning(object message)
+        protected override void Log(LogType logType, object message, UnityEngine.Object context)
         {
-            if (ProxyEntriesToLogs) { Debug.LogWarning(message); }
-
-            WriteLine(LOGTYPE_WARNING, message.ToString());
+            WriteLine(logType, BuildLogStringOutput(logType, message, context));
         }
 
-        /// <summary>
-        /// A variant of _Log that logs an error message to the Udon Console
-        /// </summary>
-        /// <param name="message"></param>
-        public void _LogError(object message)
+        protected override void LogFormat(LogType logType, string format, params object[] args)
         {
-            if (ProxyEntriesToLogs) { Debug.LogError(message); }
+            WriteLine(logType, BuildLogStringOutput(logType, string.Format(format, args)));
+        }
 
-            WriteLine(LOGTYPE_ERROR, message.ToString());
+        protected override void LogFormat(LogType logType, UnityEngine.Object context, string format, params object[] args)
+        {
+            WriteLine(logType, BuildLogStringOutput(logType, string.Format(format, args), context));
         }
         #endregion
 

@@ -2125,19 +2125,19 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: Console
+      Data: Logger
     - Name: $v
       Entry: 7
       Data: 125|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: Console
+      Data: Logger
     - Name: <UserType>k__BackingField
       Entry: 7
       Data: 126|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: Varneon.UdonPrefabs.RuntimeTools.UdonConsole, Varneon.UdonPrefabs.RuntimeTools
+      Data: Varneon.UdonPrefabs.Abstract.UdonLogger, Varneon.UdonPrefabs.Abstract
     - Name: 
       Entry: 8
       Data: 

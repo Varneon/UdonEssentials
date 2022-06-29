@@ -7,14 +7,13 @@ using System;
 using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
-using Varneon.UdonPrefabs.RuntimeTools;
 using VRC.SDK3.Components.Video;
 using VRC.SDK3.Video.Components;
 using VRC.SDKBase;
+using Varneon.UdonPrefabs.Abstract;
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
 using UnityEditor;
 using UdonSharpEditor;
-using VRC.Udon;
 #endif
 
 namespace Varneon.UdonPrefabs.Essentials
@@ -74,7 +73,7 @@ namespace Varneon.UdonPrefabs.Essentials
         [Space]
         [Header("Debug")]
         [SerializeField]
-        private UdonConsole Console;
+        private UdonLogger Logger;
         #endregion
 
         #region Private Variables
@@ -964,7 +963,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="text"></param>
         private void Log(string text)
         {
-            if (Console) { Console._Log($"{LogPrefix} {text}"); }
+            if (Logger) { Logger._Log($"{LogPrefix} {text}"); }
 
             Debug.Log($"{LogPrefix} {text}");
         }
@@ -975,7 +974,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="text"></param>
         private void LogWarning(string text)
         {
-            if (Console) { Console._LogWarning($"{LogPrefix} {text}"); }
+            if (Logger) { Logger._LogWarning($"{LogPrefix} {text}"); }
 
             Debug.LogWarning($"{LogPrefix} {text}");
         }
@@ -986,7 +985,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="text"></param>
         private void LogError(string text)
         {
-            if (Console) { Console._LogError($"{LogPrefix} {text}"); }
+            if (Logger) { Logger._LogError($"{LogPrefix} {text}"); }
 
             Debug.LogError($"{LogPrefix} {text}");
         }
