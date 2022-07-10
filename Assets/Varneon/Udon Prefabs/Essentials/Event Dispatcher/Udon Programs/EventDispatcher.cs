@@ -1,6 +1,5 @@
 ﻿using JetBrains.Annotations;
 using UdonSharp;
-using UnityEngine;
 using VRC.SDKBase;
 
 namespace Varneon.UdonPrefabs.Essentials
@@ -18,11 +17,11 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <summary>
         /// Delegate behaviours for all of the events
         /// </summary>
-        private Component[]
-            fixedUpdateDelegates = new Component[0],
-            updateDelegates = new Component[0],
-            lateUpdateDelegates = new Component[0],
-            postLateUpdateDelegates = new Component[0];
+        private UdonSharpBehaviour[]
+            fixedUpdateDelegates = new UdonSharpBehaviour[0],
+            updateDelegates = new UdonSharpBehaviour[0],
+            lateUpdateDelegates = new UdonSharpBehaviour[0],
+            postLateUpdateDelegates = new UdonSharpBehaviour[0];
 
         /// <summary>
         /// Quick state for checking if certain event has any delegates to bypass array lenght check
@@ -61,13 +60,13 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="delegates">Existing array of delegate behaviours</param>
         /// <param name="newDelegate">Delegate behaviour to be added</param>
         /// <returns>The new delegate behaviour array</returns>
-        private Component[] AddDelegate(Component[] delegates, UdonSharpBehaviour newDelegate)
+        private UdonSharpBehaviour[] AddDelegate(UdonSharpBehaviour[] delegates, UdonSharpBehaviour newDelegate)
         {
             if (GetDelegateIndex(delegates, newDelegate) >= 0) { return delegates; }
 
             int delegateCount = delegates.Length;
 
-            Component[] newDelegateList = new UdonSharpBehaviour[delegateCount + 1];
+            UdonSharpBehaviour[] newDelegateList = new UdonSharpBehaviour[delegateCount + 1];
 
             delegates.CopyTo(newDelegateList, 0);
 
@@ -82,17 +81,17 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="delegates">Existing array of delegate behaviours</param>
         /// <param name="delegateToRemove">Delegate behaviour to be removed</param>
         /// <returns>The new delegate behaviour array</returns>
-        private Component[] RemoveDelegate(Component[] delegates, UdonSharpBehaviour delegateToRemove)
+        private UdonSharpBehaviour[] RemoveDelegate(UdonSharpBehaviour[] delegates, UdonSharpBehaviour delegateToRemove)
         {
-            if(GetDelegateIndex(delegates, delegateToRemove) < 0) { return delegates; }
+            if (GetDelegateIndex(delegates, delegateToRemove) < 0) { return delegates; }
 
             int delegateCount = delegates.Length;
 
             int offset = 0;
 
-            Component[] newDelegateList = new UdonSharpBehaviour[delegateCount - 1];
+            UdonSharpBehaviour[] newDelegateList = new UdonSharpBehaviour[delegateCount - 1];
 
-            for(int i = 0; i < delegateCount - 1; i++)
+            for (int i = 0; i < delegateCount - 1; i++)
             {
                 if (offset == 0 && delegates[i].Equals(delegateToRemove))
                 {
@@ -111,9 +110,9 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="delegates">Array of delegate behaviours</param>
         /// <param name="delegateToQuery">Delegate behaviour to find from the array</param>
         /// <returns>Index of the delegate behaviour. Returns -1 if delegate behaviour doesn't exist in the array</returns>
-        private int GetDelegateIndex(Component[] delegates, UdonSharpBehaviour delegateToQuery)
+        private int GetDelegateIndex(UdonSharpBehaviour[] delegates, UdonSharpBehaviour delegateToQuery)
         {
-            for(int i = 0; i < delegates.Length; i++)
+            for (int i = 0; i < delegates.Length; i++)
             {
                 if (delegates[i].Equals(delegateToQuery))
                 {
@@ -212,9 +211,9 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             if (hasFixedUpdateDelegates)
             {
-                for(int i = 0; i < fixedUpdateDelegateCount; i++)
+                for (int i = 0; i < fixedUpdateDelegateCount; i++)
                 {
-                    ((UdonSharpBehaviour)fixedUpdateDelegates[i]).SendCustomEvent(FixedUpdateEvent);
+                    fixedUpdateDelegates[i].SendCustomEvent(FixedUpdateEvent);
                 }
             }
         }
@@ -225,7 +224,7 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 for (int i = 0; i < updateDelegateCount; i++)
                 {
-                    ((UdonSharpBehaviour)updateDelegates[i]).SendCustomEvent(UpdateEvent);
+                    updateDelegates[i].SendCustomEvent(UpdateEvent);
                 }
             }
         }
@@ -236,7 +235,7 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 for (int i = 0; i < lateUpdateDelegateCount; i++)
                 {
-                    ((UdonSharpBehaviour)lateUpdateDelegates[i]).SendCustomEvent(LateUpdateEvent);
+                    lateUpdateDelegates[i].SendCustomEvent(LateUpdateEvent);
                 }
             }
         }
@@ -247,7 +246,7 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 for (int i = 0; i < postLateUpdateDelegateCount; i++)
                 {
-                    ((UdonSharpBehaviour)postLateUpdateDelegates[i]).SendCustomEvent(PostLateUpdateEvent);
+                    postLateUpdateDelegates[i].SendCustomEvent(PostLateUpdateEvent);
                 }
             }
         }
