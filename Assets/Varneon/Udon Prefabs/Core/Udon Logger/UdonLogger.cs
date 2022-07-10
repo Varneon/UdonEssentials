@@ -3,7 +3,7 @@
 using UdonSharp;
 using UnityEngine;
 
-namespace Varneon.UdonPrefabs.Abstract
+namespace Varneon.UdonPrefabs.Core
 {
     /// <summary>
     /// Abstract logger for UdonBehaviours
