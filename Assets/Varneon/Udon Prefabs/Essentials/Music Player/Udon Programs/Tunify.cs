@@ -11,10 +11,6 @@ using VRC.SDK3.Components.Video;
 using VRC.SDK3.Video.Components;
 using VRC.SDKBase;
 using Varneon.UdonPrefabs.Core;
-#if !COMPILER_UDONSHARP && UNITY_EDITOR
-using UnityEditor;
-using UdonSharpEditor;
-#endif
 
 namespace Varneon.UdonPrefabs.Essentials
 {
@@ -32,7 +28,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
         [SerializeField, ColorUsage(false, false)]
         private Color HighlightColor = new Color(0f, 1f, 0f);
-        
+
         [SerializeField]
         private AudioSource[] AudioSources;
 
@@ -48,7 +44,7 @@ namespace Varneon.UdonPrefabs.Essentials
         [Header("References")]
         [SerializeField]
         private RectTransform Playlists;
-        
+
         [SerializeField]
         private RectTransform Songs;
 
@@ -166,12 +162,12 @@ namespace Varneon.UdonPrefabs.Essentials
             if (PlayOnStart)
             {
                 if (!OnlyFirstPlaylistOnStart)
-                { 
-                    LoadAndPlayAnyRandomSong(); 
+                {
+                    LoadAndPlayAnyRandomSong();
                 }
                 else
                 {
-                    if(!DisableCopyrightedAutoplay || (CopyrightFreePlaylistIndices.Length > 0 && CopyrightFreePlaylistIndices[0] == 0))
+                    if (!DisableCopyrightedAutoplay || (CopyrightFreePlaylistIndices.Length > 0 && CopyrightFreePlaylistIndices[0] == 0))
                     {
                         selectedPlaylist = nextSongPlaylistIndex = 0;
                         if (Shuffle || ShufflePlaylist) { LoadAndPlayRandomSongOnList(nextSongPlaylistIndex); }
@@ -256,7 +252,7 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             int songListIndex = GetPressedButtonIndex(Songs);
 
-            if(loading || songListIndex < 0 || isRateLimited) { return; }
+            if (loading || songListIndex < 0 || isRateLimited) { return; }
 
             int songIndex = PlaylistIndices[selectedPlaylist] + songListIndex;
 
@@ -295,7 +291,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             SetButtonHighlight(ButtonRepeat, Repeat);
 
-            if(Repeat) { return; }
+            if (Repeat) { return; }
 
             repeatOne = true;
 
@@ -446,7 +442,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             for (int i = 0; i < PlaylistIndices.Length; i++)
             {
-                if(PlaylistIndices[i] <= songIndex) { continue; }
+                if (PlaylistIndices[i] <= songIndex) { continue; }
 
                 return i - 1;
             }
@@ -460,7 +456,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void InitializePlaylists()
         {
-            if(PlaylistIndices.Length == 0)
+            if (PlaylistIndices.Length == 0)
             {
                 PlaylistIndices = new int[] { 0 };
 
@@ -469,7 +465,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             for (int i = 0; i < PlaylistIndices.Length; i++)
             {
-                if(i > 0) { AddNewListItem(Playlists, PlaylistItem); }
+                if (i > 0) { AddNewListItem(Playlists, PlaylistItem); }
 
                 Playlists.GetChild(i).GetChild(0).GetComponent<Text>().text = PlaylistNames[i];
             }
@@ -488,9 +484,9 @@ namespace Varneon.UdonPrefabs.Essentials
 
             bool hasCopyrightedSongs = true;
 
-            for(int i = 0; i < CopyrightFreePlaylistIndices.Length; i++)
+            for (int i = 0; i < CopyrightFreePlaylistIndices.Length; i++)
             {
-                if(CopyrightFreePlaylistIndices[i] == selectedPlaylist) { hasCopyrightedSongs = false; break; }
+                if (CopyrightFreePlaylistIndices[i] == selectedPlaylist) { hasCopyrightedSongs = false; break; }
             }
 
             CopyrightedPlaylistNotice.gameObject.SetActive(hasCopyrightedSongs);
@@ -511,7 +507,7 @@ namespace Varneon.UdonPrefabs.Essentials
                 {
                     AddNewListItem(Songs, SongItem);
                 }
-                else if(i >= songCount)
+                else if (i >= songCount)
                 {
                     Destroy(Songs.GetChild(i).gameObject);
                     continue;
@@ -657,7 +653,7 @@ namespace Varneon.UdonPrefabs.Essentials
             if (ShufflePlaylist) { LoadAndPlayAnyRandomSong(); return; }
             else if (Shuffle) { LoadAndPlayRandomSongOnList(currentSongPlaylistIndex); return; }
 
-            if (currentSongIndex >= GetLastPlaylistSongIndex(currentSongPlaylistIndex)) 
+            if (currentSongIndex >= GetLastPlaylistSongIndex(currentSongPlaylistIndex))
             {
                 if (Repeat)
                 {
@@ -700,17 +696,17 @@ namespace Varneon.UdonPrefabs.Essentials
             {
                 int[] playlistIndices = DisableCopyrightedAutoplay ? AutoplayCopyrightFreePlaylistIndices : AutoplayPlaylistIndices;
 
-                if(playlistIndices.Length == 0) { PlayOnStart = false; LoadAndPlayAnyRandomSong(); return; }
+                if (playlistIndices.Length == 0) { PlayOnStart = false; LoadAndPlayAnyRandomSong(); return; }
 
                 nextSongPlaylistIndex = playlistIndices[UnityEngine.Random.Range(0, playlistIndices.Length)];
             }
-            else if(DisableCopyrightedAutoplay)
+            else if (DisableCopyrightedAutoplay)
             {
-                if(CopyrightFreePlaylistIndices.Length == 0) 
+                if (CopyrightFreePlaylistIndices.Length == 0)
                 {
                     ShowPromptNoCopyrightFreeSongs();
 
-                    return; 
+                    return;
                 }
 
                 nextSongPlaylistIndex = CopyrightFreePlaylistIndices[UnityEngine.Random.Range(0, CopyrightFreePlaylistIndices.Length)];
@@ -740,7 +736,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void AutoPlayNextOrRandom()
         {
-            if(ShufflePlaylist){ LoadAndPlayAnyRandomSong(); return; }
+            if (ShufflePlaylist) { LoadAndPlayAnyRandomSong(); return; }
             else if (Shuffle) { LoadAndPlayRandomSongOnList(currentSongPlaylistIndex); return; }
 
             LoadAndPlayNextSong();
@@ -751,7 +747,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void GetActiveSongListItems()
         {
-            if(selectedPlaylist == currentSongPlaylistIndex)
+            if (selectedPlaylist == currentSongPlaylistIndex)
             {
                 int songListIndex = currentSongIndex - PlaylistIndices[currentSongPlaylistIndex];
 
@@ -765,7 +761,7 @@ namespace Varneon.UdonPrefabs.Essentials
                 }
             }
 
-            if(selectedPlaylist == nextSongPlaylistIndex)
+            if (selectedPlaylist == nextSongPlaylistIndex)
             {
                 int songListIndex = nextSongIndex - PlaylistIndices[nextSongPlaylistIndex];
 
@@ -793,7 +789,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="highlighted"></param>
         private void HighlightSongListItem(bool highlighted)
         {
-            if(highlighted && selectedPlaylist != nextSongPlaylistIndex) { return; }
+            if (highlighted && selectedPlaylist != nextSongPlaylistIndex) { return; }
 
             Transform listItem = highlighted ? nextSongListItem : currentSongListItem;
 
@@ -801,7 +797,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             Color color = highlighted ? HighlightColor : new Color(1f, 1f, 1f);
 
-            foreach(Text text in listItem.GetComponentsInChildren<Text>(true))
+            foreach (Text text in listItem.GetComponentsInChildren<Text>(true))
             {
                 text.color = color;
             }
@@ -951,7 +947,7 @@ namespace Varneon.UdonPrefabs.Essentials
         /// </summary>
         private void UpdateVolumeIcon()
         {
-            for(int i = 0; i < volumeIcons.Length; i++)
+            for (int i = 0; i < volumeIcons.Length; i++)
             {
                 volumeIcons[i].enabled = Mathf.CeilToInt((VolumeSlider.value - VolumeSlider.minValue) * (volumeIcons.Length - 1f)) == i;
             }
@@ -1011,7 +1007,7 @@ namespace Varneon.UdonPrefabs.Essentials
             AutoPlayNextOrRandom();
         }
 
-        public override void OnVideoStart() 
+        public override void OnVideoStart()
         {
             Log($"<color=#DCDCAA>{nameof(OnVideoStart)}</color>()");
 
@@ -1061,7 +1057,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             if (isPlaying) { return; }
 
-            if(error != "RateLimited") { SendCustomEventDelayedSeconds(nameof(_TryToRecoverFromError), RATE_LIMIT_SECONDS); recoveringFromError = true; return; }
+            if (error != "RateLimited") { SendCustomEventDelayedSeconds(nameof(_TryToRecoverFromError), RATE_LIMIT_SECONDS); recoveringFromError = true; return; }
 
             UpdatePlayingPlaylistIcon(false);
 
@@ -1073,84 +1069,4 @@ namespace Varneon.UdonPrefabs.Essentials
         }
         #endregion
     }
-
-    #region Custom Editor
-#if !COMPILER_UDONSHARP && UNITY_EDITOR
-    [CustomEditor(typeof(Tunify))]
-    public class TunifyEditor : Editor
-    {
-        private Tunify tunify;
-
-        private bool invalidPrefabOrBehaviour;
-
-        private void OnEnable()
-        {
-            tunify = (Tunify)target;
-
-            invalidPrefabOrBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(tunify) == null || tunify.transform.childCount < 1;
-        }
-
-        public override void OnInspectorGUI()
-        {
-            DrawBanner();
-
-            if (invalidPrefabOrBehaviour)
-            {
-                EditorGUILayout.HelpBox("Use the Tunify prefab provided in Assets/Varneon/Udon Prefabs/Essentials/Music Player", MessageType.Error);
-
-                return;
-            }
-
-            if (tunify.transform.localScale.normalized != Vector3.one.normalized || tunify.transform.GetChild(0).localScale.normalized != Vector3.one.normalized) { DrawScaleWarning(); }
-
-            EditorGUILayout.Space();
-
-            base.OnInspectorGUI();
-        }
-
-        private void DrawBanner()
-        {
-            GUI.color = new Color(0f, 0.5f, 1f);
-
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUI.color = Color.white;
-
-            GUILayout.Label("Varneon's UdonEssentials - Tunify", EditorStyles.whiteLargeLabel);
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
-
-            if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
-            {
-                Application.OpenURL("https://github.com/Varneon");
-            }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
-
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            GUILayout.Label($"[Library] Songs: {tunify.Urls.Length} | Playlists: {tunify.PlaylistIndices.Length}");
-
-            GUILayout.EndHorizontal();
-        }
-
-        private void DrawScaleWarning()
-        {
-            GUI.color = Color.yellow;
-
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            GUI.color = Color.white;
-
-            GUILayout.Label("Scale of the root prefab or the Canvas is not even! If you want to resize the music player, please adjust the scale on each axis evenly or adjust the Width and Height on the Canvas RectTransform.", EditorStyles.wordWrappedLabel);
-
-            GUILayout.EndHorizontal();
-        }
-    }
-#endif
-    #endregion
 }
