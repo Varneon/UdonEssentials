@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UdonSharpEditor;
 using UnityEngine;
+using Varneon.UdonPrefabs.Essentials.MusicPlayerEditor;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
@@ -11,11 +12,17 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private bool invalidPrefabOrBehaviour;
 
+        private RectTransform canvasTransform;
+
+        private bool showCanvasSettings;
+
         private void OnEnable()
         {
             tunify = (Tunify)target;
 
             invalidPrefabOrBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(tunify) == null || tunify.transform.childCount < 1;
+
+            canvasTransform = tunify.GetComponentInChildren<Canvas>(true).GetComponent<RectTransform>();
         }
 
         public override void OnInspectorGUI()
@@ -40,30 +47,65 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             GUI.color = new Color(0f, 0.5f, 1f);
 
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUI.color = Color.white;
-
-            GUILayout.Label("Varneon's UdonEssentials - Tunify", EditorStyles.whiteLargeLabel);
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
-
-            if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                Application.OpenURL("https://github.com/Varneon");
+                GUI.color = Color.white;
+
+                GUILayout.Label("Varneon's UdonEssentials - Tunify", EditorStyles.whiteLargeLabel);
+
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
+
+                    if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+                    {
+                        Application.OpenURL("https://github.com/Varneon");
+                    }
+                }
             }
 
-            GUILayout.EndHorizontal();
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
+            {
+                GUILayout.Label($"[Library] Songs: {tunify.Urls.Length} | Playlists: {tunify.PlaylistIndices.Length}");
 
-            GUILayout.EndVertical();
+                if (GUILayout.Button("Open Music Player Manager", GUILayout.ExpandWidth(false)))
+                {
+                    MusicPlayerManager.Init();
+                }
+            }
 
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
+            {
+                using (new EditorGUI.IndentLevelScope(1))
+                {
+                    if (showCanvasSettings = EditorGUILayout.Foldout(showCanvasSettings, "Window Options", true))
+                    {
+                        using (var scope = new EditorGUI.ChangeCheckScope())
+                        {
+                            Vector2 size = EditorGUILayout.Vector2Field("Resolution", canvasTransform.sizeDelta);
 
-            GUILayout.Label($"[Library] Songs: {tunify.Urls.Length} | Playlists: {tunify.PlaylistIndices.Length}");
+                            if (scope.changed)
+                            {
+                                Undo.RecordObject(canvasTransform, "Change Canvas Resolution");
 
-            GUILayout.EndHorizontal();
+                                canvasTransform.sizeDelta = size;
+                            }
+                        }
+
+                        using (var scope = new EditorGUI.ChangeCheckScope())
+                        {
+                            float scale = EditorGUILayout.FloatField("Scale", canvasTransform.localScale.x);
+
+                            if (scope.changed)
+                            {
+                                Undo.RecordObject(canvasTransform, "Change Canvas Scale");
+
+                                canvasTransform.localScale = new Vector3(scale, scale, scale);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void DrawScaleWarning()
