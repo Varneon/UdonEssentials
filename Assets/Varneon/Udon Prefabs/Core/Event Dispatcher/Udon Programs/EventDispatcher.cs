@@ -2,7 +2,7 @@
 using UdonSharp;
 using VRC.SDKBase;
 
-namespace Varneon.UdonPrefabs.Essentials
+namespace Varneon.UdonPrefabs.Core
 {
     /// <summary>
     /// Dispatcher for following update events: Fixed Update, Update, LateUpdate, PostLateUpdate

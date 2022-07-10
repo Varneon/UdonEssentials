@@ -8,7 +8,7 @@ public class EventDispatcherUsageExample : UdonSharpBehaviour
 {
     // Add a reference to the EventDispatcher in the scene
     [SerializeField]
-    private Varneon.UdonPrefabs.Essentials.EventDispatcher eventDispatcher;
+    private Varneon.UdonPrefabs.Core.EventDispatcher eventDispatcher;
 
     private void Start()
     {
