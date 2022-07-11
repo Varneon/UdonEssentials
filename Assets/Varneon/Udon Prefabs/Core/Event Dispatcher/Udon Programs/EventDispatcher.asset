@@ -50,13 +50,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: fixedUpdateDelegates
+      Data: fixedUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 2|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: fixedUpdateDelegates
+      Data: fixedUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 7
       Data: 3|System.RuntimeType, mscorlib
@@ -110,13 +110,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: updateDelegates
+      Data: updateHandlers
     - Name: $v
       Entry: 7
       Data: 6|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: updateDelegates
+      Data: updateHandlers
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 3
@@ -158,13 +158,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: lateUpdateDelegates
+      Data: lateUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 8|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: lateUpdateDelegates
+      Data: lateUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 3
@@ -206,13 +206,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: postLateUpdateDelegates
+      Data: postLateUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 10|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: postLateUpdateDelegates
+      Data: postLateUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 3
@@ -254,13 +254,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: hasFixedUpdateDelegates
+      Data: hasFixedUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 12|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: hasFixedUpdateDelegates
+      Data: hasFixedUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 7
       Data: 13|System.RuntimeType, mscorlib
@@ -308,13 +308,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: hasUpdateDelegates
+      Data: hasUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 15|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: hasUpdateDelegates
+      Data: hasUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 13
@@ -356,13 +356,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: hasLateUpdateDelegates
+      Data: hasLateUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 17|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: hasLateUpdateDelegates
+      Data: hasLateUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 13
@@ -404,13 +404,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: hasPostLateUpdateDelegates
+      Data: hasPostLateUpdateHandlers
     - Name: $v
       Entry: 7
       Data: 19|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: hasPostLateUpdateDelegates
+      Data: hasPostLateUpdateHandlers
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 13
@@ -452,13 +452,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: fixedUpdateDelegateCount
+      Data: fixedUpdateHandlerCount
     - Name: $v
       Entry: 7
       Data: 21|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: fixedUpdateDelegateCount
+      Data: fixedUpdateHandlerCount
     - Name: <UserType>k__BackingField
       Entry: 7
       Data: 22|System.RuntimeType, mscorlib
@@ -506,13 +506,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: updateDelegateCount
+      Data: updateHandlerCount
     - Name: $v
       Entry: 7
       Data: 24|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: updateDelegateCount
+      Data: updateHandlerCount
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 22
@@ -554,13 +554,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: lateUpdateDelegateCount
+      Data: lateUpdateHandlerCount
     - Name: $v
       Entry: 7
       Data: 26|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: lateUpdateDelegateCount
+      Data: lateUpdateHandlerCount
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 22
@@ -602,13 +602,13 @@ MonoBehaviour:
       Data: 
     - Name: $k
       Entry: 1
-      Data: postLateUpdateDelegateCount
+      Data: postLateUpdateHandlerCount
     - Name: $v
       Entry: 7
       Data: 28|UdonSharp.Compiler.FieldDefinition, UdonSharp.Editor
     - Name: <Name>k__BackingField
       Entry: 1
-      Data: postLateUpdateDelegateCount
+      Data: postLateUpdateHandlerCount
     - Name: <UserType>k__BackingField
       Entry: 9
       Data: 22

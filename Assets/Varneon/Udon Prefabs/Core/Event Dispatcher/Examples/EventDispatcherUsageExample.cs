@@ -12,40 +12,40 @@ public class EventDispatcherUsageExample : UdonSharpBehaviour
 
     private void Start()
     {
-        // Call the "_Add<Event>Delegate(this)" on the dispatcher to add the delegate on this behaviour
-        eventDispatcher._AddFixedUpdateDelegate(this);
-        eventDispatcher._AddUpdateDelegate(this);
-        eventDispatcher._AddLateUpdateDelegate(this);
-        eventDispatcher._AddPostLateUpdateDelegate(this);
+        // Call the "_Add<Event>Handler(this)" on the dispatcher to add the handler on this behaviour
+        eventDispatcher._AddFixedUpdateHandler(this);
+        eventDispatcher._AddUpdateHandler(this);
+        eventDispatcher._AddLateUpdateHandler(this);
+        eventDispatcher._AddPostLateUpdateHandler(this);
     }
 
-    public void _FixedUpdateDelegate()
+    public void _FixedUpdateHandler()
     {
-        Debug.Log("_FixedUpdateDelegate()");
+        Debug.Log("_FixedUpdateHandler()");
 
-        // Call the "_Remove<Event>Delegate(this)" on the dispatcher to remove the delegate on this behaviour
-        eventDispatcher._RemoveFixedUpdateDelegate(this);
+        // Call the "_Remove<Event>Handler(this)" on the dispatcher to remove the handler on this behaviour
+        eventDispatcher._RemoveFixedUpdateHandler(this);
     }
 
-    public void _UpdateDelegate()
+    public void _UpdateHandler()
     {
-        Debug.Log("_UpdateDelegate()");
+        Debug.Log("_UpdateHandler()");
 
-        eventDispatcher._RemoveUpdateDelegate(this);
+        eventDispatcher._RemoveUpdateHandler(this);
     }
 
-    public void _LateUpdateDelegate()
+    public void _LateUpdateHandler()
     {
-        Debug.Log("_LateUpdateDelegate()");
+        Debug.Log("_LateUpdateHandler()");
 
-        eventDispatcher._RemoveLateUpdateDelegate(this);
+        eventDispatcher._RemoveLateUpdateHandler(this);
     }
 
-    public void _PostLateUpdateDelegate()
+    public void _PostLateUpdateHandler()
     {
-        Debug.Log("_PostLateUpdateDelegate()");
+        Debug.Log("_PostLateUpdateHandler()");
 
-        eventDispatcher._RemovePostLateUpdateDelegate(this);
+        eventDispatcher._RemovePostLateUpdateHandler(this);
     }
 }
 

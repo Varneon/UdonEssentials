@@ -15,106 +15,106 @@ namespace Varneon.UdonPrefabs.Core
     {
         #region Private Variables
         /// <summary>
-        /// Delegate behaviours for all of the events
+        /// Handler behaviours for all of the events
         /// </summary>
         private UdonSharpBehaviour[]
-            fixedUpdateDelegates = new UdonSharpBehaviour[0],
-            updateDelegates = new UdonSharpBehaviour[0],
-            lateUpdateDelegates = new UdonSharpBehaviour[0],
-            postLateUpdateDelegates = new UdonSharpBehaviour[0];
+            fixedUpdateHandlers = new UdonSharpBehaviour[0],
+            updateHandlers = new UdonSharpBehaviour[0],
+            lateUpdateHandlers = new UdonSharpBehaviour[0],
+            postLateUpdateHandlers = new UdonSharpBehaviour[0];
 
         /// <summary>
-        /// Quick state for checking if certain event has any delegates to bypass array lenght check
+        /// Quick state for checking if certain event has any handlers to bypass array lenght check
         /// </summary>
         private bool
-            hasFixedUpdateDelegates,
-            hasUpdateDelegates,
-            hasLateUpdateDelegates,
-            hasPostLateUpdateDelegates;
+            hasFixedUpdateHandlers,
+            hasUpdateHandlers,
+            hasLateUpdateHandlers,
+            hasPostLateUpdateHandlers;
 
         /// <summary>
-        /// Quick delegate count for bypassing array length check
+        /// Quick handler count for bypassing array length check
         /// </summary>
         private int
-            fixedUpdateDelegateCount,
-            updateDelegateCount,
-            lateUpdateDelegateCount,
-            postLateUpdateDelegateCount;
+            fixedUpdateHandlerCount,
+            updateHandlerCount,
+            lateUpdateHandlerCount,
+            postLateUpdateHandlerCount;
         #endregion
 
         #region Constants
         /// <summary>
-        /// Delegate method names for each event
+        /// Handler method names for each event
         /// </summary>
         private const string
-            FixedUpdateEvent = "_FixedUpdateDelegate",
-            UpdateEvent = "_UpdateDelegate",
-            LateUpdateEvent = "_LateUpdateDelegate",
-            PostLateUpdateEvent = "_PostLateUpdateDelegate";
+            FixedUpdateHandlerName = "_FixedUpdateHandler",
+            UpdateHandlerName = "_UpdateHandler",
+            LateUpdateHandlerName = "_LateUpdateHandler",
+            PostLateUpdateHandlerName = "_PostLateUpdateHandler";
         #endregion
 
         #region Private Methods
         /// <summary>
-        /// Add delegate behaviour to an array
+        /// Add handler behaviour to an array
         /// </summary>
-        /// <param name="delegates">Existing array of delegate behaviours</param>
-        /// <param name="newDelegate">Delegate behaviour to be added</param>
-        /// <returns>The new delegate behaviour array</returns>
-        private UdonSharpBehaviour[] AddDelegate(UdonSharpBehaviour[] delegates, UdonSharpBehaviour newDelegate)
+        /// <param name="handlers">Existing array of handler behaviours</param>
+        /// <param name="newHandler">Handler behaviour to be added</param>
+        /// <returns>The new handler behaviour array</returns>
+        private UdonSharpBehaviour[] AddHandler(UdonSharpBehaviour[] handlers, UdonSharpBehaviour newHandler)
         {
-            if (GetDelegateIndex(delegates, newDelegate) >= 0) { return delegates; }
+            if (GetHandlerIndex(handlers, newHandler) >= 0) { return handlers; }
 
-            int delegateCount = delegates.Length;
+            int handlerCount = handlers.Length;
 
-            UdonSharpBehaviour[] newDelegateList = new UdonSharpBehaviour[delegateCount + 1];
+            UdonSharpBehaviour[] newHandlerList = new UdonSharpBehaviour[handlerCount + 1];
 
-            delegates.CopyTo(newDelegateList, 0);
+            handlers.CopyTo(newHandlerList, 0);
 
-            newDelegateList[delegateCount] = newDelegate;
+            newHandlerList[handlerCount] = newHandler;
 
-            return newDelegateList;
+            return newHandlerList;
         }
 
         /// <summary>
-        /// Remove delegate behaviour from an array
+        /// Remove handler behaviour from an array
         /// </summary>
-        /// <param name="delegates">Existing array of delegate behaviours</param>
-        /// <param name="delegateToRemove">Delegate behaviour to be removed</param>
-        /// <returns>The new delegate behaviour array</returns>
-        private UdonSharpBehaviour[] RemoveDelegate(UdonSharpBehaviour[] delegates, UdonSharpBehaviour delegateToRemove)
+        /// <param name="handlers">Existing array of handler behaviours</param>
+        /// <param name="handlerToRemove">Handler behaviour to be removed</param>
+        /// <returns>The new handler behaviour array</returns>
+        private UdonSharpBehaviour[] RemoveHandler(UdonSharpBehaviour[] handlers, UdonSharpBehaviour handlerToRemove)
         {
-            if (GetDelegateIndex(delegates, delegateToRemove) < 0) { return delegates; }
+            if (GetHandlerIndex(handlers, handlerToRemove) < 0) { return handlers; }
 
-            int delegateCount = delegates.Length;
+            int handlerCount = handlers.Length;
 
             int offset = 0;
 
-            UdonSharpBehaviour[] newDelegateList = new UdonSharpBehaviour[delegateCount - 1];
+            UdonSharpBehaviour[] newHandlerList = new UdonSharpBehaviour[handlerCount - 1];
 
-            for (int i = 0; i < delegateCount - 1; i++)
+            for (int i = 0; i < handlerCount - 1; i++)
             {
-                if (offset == 0 && delegates[i].Equals(delegateToRemove))
+                if (offset == 0 && handlers[i].Equals(handlerToRemove))
                 {
                     offset = 1;
                 }
 
-                newDelegateList[i] = delegates[i + offset];
+                newHandlerList[i] = handlers[i + offset];
             }
 
-            return newDelegateList;
+            return newHandlerList;
         }
 
         /// <summary>
-        /// Gets the index of the delegate behaviour in the array
+        /// Gets the index of the handler behaviour in the array
         /// </summary>
-        /// <param name="delegates">Array of delegate behaviours</param>
-        /// <param name="delegateToQuery">Delegate behaviour to find from the array</param>
-        /// <returns>Index of the delegate behaviour. Returns -1 if delegate behaviour doesn't exist in the array</returns>
-        private int GetDelegateIndex(UdonSharpBehaviour[] delegates, UdonSharpBehaviour delegateToQuery)
+        /// <param name="handlers">Array of handler behaviours</param>
+        /// <param name="handlerToQuery">Handler behaviour to find from the array</param>
+        /// <returns>Index of the handler behaviour. Returns -1 if handler behaviour doesn't exist in the array</returns>
+        private int GetHandlerIndex(UdonSharpBehaviour[] handlers, UdonSharpBehaviour handlerToQuery)
         {
-            for (int i = 0; i < delegates.Length; i++)
+            for (int i = 0; i < handlers.Length; i++)
             {
-                if (delegates[i].Equals(delegateToQuery))
+                if (handlers[i].Equals(handlerToQuery))
                 {
                     return i;
                 }
@@ -126,127 +126,127 @@ namespace Varneon.UdonPrefabs.Core
 
         #region Public API Methods
         /// <summary>
-        /// Add delegate for FixedUpdate()
+        /// Add handler for FixedUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour with _FixedUpdateDelegate() which will be called</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour with _FixedUpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddFixedUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddFixedUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            hasFixedUpdateDelegates = (fixedUpdateDelegateCount = (fixedUpdateDelegates = AddDelegate(fixedUpdateDelegates, udonSharpBehaviour)).Length) > 0;
+            hasFixedUpdateHandlers = (fixedUpdateHandlerCount = (fixedUpdateHandlers = AddHandler(fixedUpdateHandlers, udonSharpBehaviour)).Length) > 0;
         }
 
         /// <summary>
-        /// Remove delegate for FixedUpdate()
+        /// Remove handler for FixedUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour</param>
         [PublicAPI]
-        public void _RemoveFixedUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemoveFixedUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            if (fixedUpdateDelegateCount > 0) { hasFixedUpdateDelegates = (fixedUpdateDelegateCount = (fixedUpdateDelegates = RemoveDelegate(fixedUpdateDelegates, udonSharpBehaviour)).Length) > 0; }
+            if (fixedUpdateHandlerCount > 0) { hasFixedUpdateHandlers = (fixedUpdateHandlerCount = (fixedUpdateHandlers = RemoveHandler(fixedUpdateHandlers, udonSharpBehaviour)).Length) > 0; }
         }
 
         /// <summary>
-        /// Add delegate for Update()
+        /// Add handler for Update()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour with _UpdateDelegate() which will be called</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour with _UpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            hasUpdateDelegates = (updateDelegateCount = (updateDelegates = AddDelegate(updateDelegates, udonSharpBehaviour)).Length) > 0;
+            hasUpdateHandlers = (updateHandlerCount = (updateHandlers = AddHandler(updateHandlers, udonSharpBehaviour)).Length) > 0;
         }
 
         /// <summary>
-        /// Remove delegate for Update()
+        /// Remove handler for Update()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour</param>
         [PublicAPI]
-        public void _RemoveUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemoveUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            if (updateDelegateCount > 0) { hasUpdateDelegates = (updateDelegateCount = (updateDelegates = RemoveDelegate(updateDelegates, udonSharpBehaviour)).Length) > 0; }
+            if (updateHandlerCount > 0) { hasUpdateHandlers = (updateHandlerCount = (updateHandlers = RemoveHandler(updateHandlers, udonSharpBehaviour)).Length) > 0; }
         }
 
         /// <summary>
-        /// Add delegate for LateUpdate()
+        /// Add handler for LateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour with _LateUpdateDelegate() which will be called</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour with _LateUpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddLateUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            hasLateUpdateDelegates = (lateUpdateDelegateCount = (lateUpdateDelegates = AddDelegate(lateUpdateDelegates, udonSharpBehaviour)).Length) > 0;
+            hasLateUpdateHandlers = (lateUpdateHandlerCount = (lateUpdateHandlers = AddHandler(lateUpdateHandlers, udonSharpBehaviour)).Length) > 0;
         }
 
         /// <summary>
-        /// Remove delegate for LateUpdate()
+        /// Remove handler for LateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour</param>
         [PublicAPI]
-        public void _RemoveLateUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemoveLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            if (lateUpdateDelegateCount > 0) { hasLateUpdateDelegates = (lateUpdateDelegateCount = (lateUpdateDelegates = RemoveDelegate(lateUpdateDelegates, udonSharpBehaviour)).Length) > 0; }
+            if (lateUpdateHandlerCount > 0) { hasLateUpdateHandlers = (lateUpdateHandlerCount = (lateUpdateHandlers = RemoveHandler(lateUpdateHandlers, udonSharpBehaviour)).Length) > 0; }
         }
 
         /// <summary>
-        /// Add delegate for PostLateUpdate()
+        /// Add handler for PostLateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour with _PostLateUpdateDelegate() which will be called</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour with _PostLateUpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddPostLateUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddPostLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            hasPostLateUpdateDelegates = (postLateUpdateDelegateCount = (postLateUpdateDelegates = AddDelegate(postLateUpdateDelegates, udonSharpBehaviour)).Length) > 0;
+            hasPostLateUpdateHandlers = (postLateUpdateHandlerCount = (postLateUpdateHandlers = AddHandler(postLateUpdateHandlers, udonSharpBehaviour)).Length) > 0;
         }
 
         /// <summary>
-        /// Remove delegate for PostLateUpdate()
+        /// Remove handler for PostLateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Delegate behaviour</param>
+        /// <param name="udonSharpBehaviour">Handler behaviour</param>
         [PublicAPI]
-        public void _RemovePostLateUpdateDelegate(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemovePostLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
         {
-            if (postLateUpdateDelegateCount > 0) { hasPostLateUpdateDelegates = (postLateUpdateDelegateCount = (postLateUpdateDelegates = RemoveDelegate(postLateUpdateDelegates, udonSharpBehaviour)).Length) > 0; }
+            if (postLateUpdateHandlerCount > 0) { hasPostLateUpdateHandlers = (postLateUpdateHandlerCount = (postLateUpdateHandlers = RemoveHandler(postLateUpdateHandlers, udonSharpBehaviour)).Length) > 0; }
         }
         #endregion
 
         #region Update Methods
         private void FixedUpdate()
         {
-            if (hasFixedUpdateDelegates)
+            if (hasFixedUpdateHandlers)
             {
-                for (int i = 0; i < fixedUpdateDelegateCount; i++)
+                for (int i = 0; i < fixedUpdateHandlerCount; i++)
                 {
-                    fixedUpdateDelegates[i].SendCustomEvent(FixedUpdateEvent);
+                    fixedUpdateHandlers[i].SendCustomEvent(FixedUpdateHandlerName);
                 }
             }
         }
 
         private void Update()
         {
-            if (hasUpdateDelegates)
+            if (hasUpdateHandlers)
             {
-                for (int i = 0; i < updateDelegateCount; i++)
+                for (int i = 0; i < updateHandlerCount; i++)
                 {
-                    updateDelegates[i].SendCustomEvent(UpdateEvent);
+                    updateHandlers[i].SendCustomEvent(UpdateHandlerName);
                 }
             }
         }
 
         private void LateUpdate()
         {
-            if (hasLateUpdateDelegates)
+            if (hasLateUpdateHandlers)
             {
-                for (int i = 0; i < lateUpdateDelegateCount; i++)
+                for (int i = 0; i < lateUpdateHandlerCount; i++)
                 {
-                    lateUpdateDelegates[i].SendCustomEvent(LateUpdateEvent);
+                    lateUpdateHandlers[i].SendCustomEvent(LateUpdateHandlerName);
                 }
             }
         }
 
         public override void PostLateUpdate()
         {
-            if (hasPostLateUpdateDelegates)
+            if (hasPostLateUpdateHandlers)
             {
-                for (int i = 0; i < postLateUpdateDelegateCount; i++)
+                for (int i = 0; i < postLateUpdateHandlerCount; i++)
                 {
-                    postLateUpdateDelegates[i].SendCustomEvent(PostLateUpdateEvent);
+                    postLateUpdateHandlers[i].SendCustomEvent(PostLateUpdateHandlerName);
                 }
             }
         }
@@ -255,13 +255,13 @@ namespace Varneon.UdonPrefabs.Core
         #region Player Events
         public override void OnPlayerLeft(VRCPlayerApi player)
         {
-            // If the player leaving is the local player, disable all delegates to prevent errors
+            // If the player leaving is the local player, disable all handlers to prevent errors
             if (!Utilities.IsValid(player))
             {
-                hasFixedUpdateDelegates = false;
-                hasUpdateDelegates = false;
-                hasLateUpdateDelegates = false;
-                hasPostLateUpdateDelegates = false;
+                hasFixedUpdateHandlers = false;
+                hasUpdateHandlers = false;
+                hasLateUpdateHandlers = false;
+                hasPostLateUpdateHandlers = false;
             }
         }
         #endregion
