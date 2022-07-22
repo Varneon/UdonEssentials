@@ -8,7 +8,7 @@ using UdonSharp;
 using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
-using Varneon.UdonPrefabs.Core;
+using Varneon.UdonPrefabs.Abstract;
 using Varneon.VInspector;
 
 namespace Varneon.UdonPrefabs.RuntimeTools

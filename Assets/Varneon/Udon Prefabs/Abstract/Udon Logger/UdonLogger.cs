@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using UdonSharp;
 using UnityEngine;
 
-namespace Varneon.UdonPrefabs.Core
+namespace Varneon.UdonPrefabs.Abstract
 {
     /// <summary>
     /// Abstract logger for UdonBehaviours

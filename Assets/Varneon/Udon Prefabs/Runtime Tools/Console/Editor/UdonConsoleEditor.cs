@@ -3,7 +3,7 @@ using UdonSharp;
 using UnityEditor;
 using UnityEngine.UIElements;
 using Varneon.VInspector;
-using Varneon.UdonPrefabs.Core;
+using Varneon.UdonPrefabs.Abstract;
 
 namespace Varneon.UdonPrefabs.RuntimeTools.Editor
 {

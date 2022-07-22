@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using VRC.SDK3.Components.Video;
 using VRC.SDK3.Video.Components;
 using VRC.SDKBase;
-using Varneon.UdonPrefabs.Core;
+using Varneon.UdonPrefabs.Abstract;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
