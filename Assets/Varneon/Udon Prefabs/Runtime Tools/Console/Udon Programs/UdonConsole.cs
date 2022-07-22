@@ -9,6 +9,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using VRC.SDKBase;
 using Varneon.UdonPrefabs.Core;
+using Varneon.VInspector;
 
 namespace Varneon.UdonPrefabs.RuntimeTools
 {
@@ -24,29 +25,37 @@ namespace Varneon.UdonPrefabs.RuntimeTools
         #region Serialized
         [Header("Settings")]
         [SerializeField]
+        [FieldParentElement("Foldout_Settings")]
         private bool ShowTimestamps = false;
 
         [SerializeField]
+        [FieldParentElement("Foldout_Settings")]
         private int MaxLogEntries = 100;
 
         [SerializeField, Range(8, 32)]
+        [FieldParentElement("Foldout_Settings")]
         private int FontSize = 24;
 
         [SerializeField]
+        [FieldParentElement("Foldout_Settings")]
         private bool ProxyEntriesToLogs;
 
         [Space]
         [Header("References")]
         [SerializeField]
+        [FieldParentElement("Foldout_References")]
         private RectTransform LogWindow;
 
         [SerializeField]
+        [FieldParentElement("Foldout_References")]
         private GameObject LogItem;
 
         [SerializeField]
+        [FieldParentElement("Foldout_References")]
         private Toggle ToggleLog, ToggleWarning, ToggleError, ToggleTimestamps;
 
         [SerializeField]
+        [FieldParentElement("Foldout_References")]
         private InputField MaxLogEntriesField, FontSizeField;
         #endregion
 
