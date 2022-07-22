@@ -43,8 +43,11 @@ namespace Varneon.UdonPrefabs.Core.Editor
             APIDocumentationBuilder.BuildAPIDocumentation(root.Q<Foldout>("Foldout_API"), typeof(Noclip));
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
+            // If foldouts is null, then OnDestroy was most likely called by prefab override preview
+            if(foldouts == null) { return; }
+
             int states = 0;
 
             for (int i = 0; i < foldouts.Count; i++)
