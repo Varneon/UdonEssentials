@@ -128,81 +128,81 @@ namespace Varneon.UdonPrefabs.Core
         /// <summary>
         /// Add handler for FixedUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour with _FixedUpdateHandler() which will be called</param>
+        /// <param name="handler">Handler behaviour with _FixedUpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddFixedUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddFixedUpdateHandler(UdonSharpBehaviour handler)
         {
-            hasFixedUpdateHandlers = (fixedUpdateHandlerCount = (fixedUpdateHandlers = AddHandler(fixedUpdateHandlers, udonSharpBehaviour)).Length) > 0;
+            hasFixedUpdateHandlers = (fixedUpdateHandlerCount = (fixedUpdateHandlers = AddHandler(fixedUpdateHandlers, handler)).Length) > 0;
         }
 
         /// <summary>
         /// Remove handler for FixedUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour</param>
+        /// <param name="handler">Handler behaviour</param>
         [PublicAPI]
-        public void _RemoveFixedUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemoveFixedUpdateHandler(UdonSharpBehaviour handler)
         {
-            if (fixedUpdateHandlerCount > 0) { hasFixedUpdateHandlers = (fixedUpdateHandlerCount = (fixedUpdateHandlers = RemoveHandler(fixedUpdateHandlers, udonSharpBehaviour)).Length) > 0; }
+            if (fixedUpdateHandlerCount > 0) { hasFixedUpdateHandlers = (fixedUpdateHandlerCount = (fixedUpdateHandlers = RemoveHandler(fixedUpdateHandlers, handler)).Length) > 0; }
         }
 
         /// <summary>
         /// Add handler for Update()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour with _UpdateHandler() which will be called</param>
+        /// <param name="handler">Handler behaviour with _UpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddUpdateHandler(UdonSharpBehaviour handler)
         {
-            hasUpdateHandlers = (updateHandlerCount = (updateHandlers = AddHandler(updateHandlers, udonSharpBehaviour)).Length) > 0;
+            hasUpdateHandlers = (updateHandlerCount = (updateHandlers = AddHandler(updateHandlers, handler)).Length) > 0;
         }
 
         /// <summary>
         /// Remove handler for Update()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour</param>
+        /// <param name="handler">Handler behaviour</param>
         [PublicAPI]
-        public void _RemoveUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemoveUpdateHandler(UdonSharpBehaviour handler)
         {
-            if (updateHandlerCount > 0) { hasUpdateHandlers = (updateHandlerCount = (updateHandlers = RemoveHandler(updateHandlers, udonSharpBehaviour)).Length) > 0; }
+            if (updateHandlerCount > 0) { hasUpdateHandlers = (updateHandlerCount = (updateHandlers = RemoveHandler(updateHandlers, handler)).Length) > 0; }
         }
 
         /// <summary>
         /// Add handler for LateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour with _LateUpdateHandler() which will be called</param>
+        /// <param name="handler">Handler behaviour with _LateUpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddLateUpdateHandler(UdonSharpBehaviour handler)
         {
-            hasLateUpdateHandlers = (lateUpdateHandlerCount = (lateUpdateHandlers = AddHandler(lateUpdateHandlers, udonSharpBehaviour)).Length) > 0;
+            hasLateUpdateHandlers = (lateUpdateHandlerCount = (lateUpdateHandlers = AddHandler(lateUpdateHandlers, handler)).Length) > 0;
         }
 
         /// <summary>
         /// Remove handler for LateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour</param>
+        /// <param name="handler">Handler behaviour</param>
         [PublicAPI]
-        public void _RemoveLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemoveLateUpdateHandler(UdonSharpBehaviour handler)
         {
-            if (lateUpdateHandlerCount > 0) { hasLateUpdateHandlers = (lateUpdateHandlerCount = (lateUpdateHandlers = RemoveHandler(lateUpdateHandlers, udonSharpBehaviour)).Length) > 0; }
+            if (lateUpdateHandlerCount > 0) { hasLateUpdateHandlers = (lateUpdateHandlerCount = (lateUpdateHandlers = RemoveHandler(lateUpdateHandlers, handler)).Length) > 0; }
         }
 
         /// <summary>
         /// Add handler for PostLateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour with _PostLateUpdateHandler() which will be called</param>
+        /// <param name="handler">Handler behaviour with _PostLateUpdateHandler() which will be called</param>
         [PublicAPI]
-        public void _AddPostLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _AddPostLateUpdateHandler(UdonSharpBehaviour handler)
         {
-            hasPostLateUpdateHandlers = (postLateUpdateHandlerCount = (postLateUpdateHandlers = AddHandler(postLateUpdateHandlers, udonSharpBehaviour)).Length) > 0;
+            hasPostLateUpdateHandlers = (postLateUpdateHandlerCount = (postLateUpdateHandlers = AddHandler(postLateUpdateHandlers, handler)).Length) > 0;
         }
 
         /// <summary>
         /// Remove handler for PostLateUpdate()
         /// </summary>
-        /// <param name="udonSharpBehaviour">Handler behaviour</param>
+        /// <param name="handler">Handler behaviour</param>
         [PublicAPI]
-        public void _RemovePostLateUpdateHandler(UdonSharpBehaviour udonSharpBehaviour)
+        public void _RemovePostLateUpdateHandler(UdonSharpBehaviour handler)
         {
-            if (postLateUpdateHandlerCount > 0) { hasPostLateUpdateHandlers = (postLateUpdateHandlerCount = (postLateUpdateHandlers = RemoveHandler(postLateUpdateHandlers, udonSharpBehaviour)).Length) > 0; }
+            if (postLateUpdateHandlerCount > 0) { hasPostLateUpdateHandlers = (postLateUpdateHandlerCount = (postLateUpdateHandlers = RemoveHandler(postLateUpdateHandlers, handler)).Length) > 0; }
         }
         #endregion
 
