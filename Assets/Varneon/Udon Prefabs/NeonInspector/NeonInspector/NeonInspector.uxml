@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="BannerBackground" style="max-height: 138px; min-width: 256px; min-height: 74px; background-color: rgb(32, 0, 64);">
+        <Style src="NeonInspectorStyles.uss" />
+        <ui:VisualElement name="Banner" style="-unity-background-scale-mode: scale-to-fit; flex-grow: 1; flex-shrink: 0; background-color: rgb(32, 0, 64); align-items: flex-start; position: absolute; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px; width: 256px; height: 64px;" />
+    </ui:VisualElement>
+    <ui:VisualElement name="InspectorBackground" style="background-color: rgb(32, 0, 64); padding-left: 8px; padding-right: 8px; padding-bottom: 8px;">
+        <Style src="NeonInspectorStyles.uss" />
+        <ui:VisualElement name="InspectorPanel" style="border-left-color: rgb(64, 0, 128); border-right-color: rgb(64, 0, 128); border-top-color: rgb(64, 0, 128); border-bottom-color: rgb(64, 0, 128); border-left-width: 2px; border-right-width: 2px; border-top-width: 2px; border-bottom-width: 2px; border-top-left-radius: 8px; border-bottom-left-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px; background-color: rgb(20, 0, 39); padding-left: 2px; padding-right: 2px; padding-top: 2px; padding-bottom: 2px;" />
+    </ui:VisualElement>
+</ui:UXML>

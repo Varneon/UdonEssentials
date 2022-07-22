@@ -1,0 +1,17 @@
+.unity-foldout {
+    margin-left: 16px;
+}
+
+.unity-foldout > Toggle > VisualElement > .unity-toggle__checkmark {
+    -unity-background-scale-mode: scale-to-fit;
+    top: 3px;
+}
+
+.unity-foldout > Toggle > VisualElement > .unity-toggle__text {
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.unity-foldout > .unity-foldout__content {
+    -unity-font-style: bold;
+}
