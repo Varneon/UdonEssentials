@@ -1,5 +1,6 @@
 ﻿#pragma warning disable IDE1006
 
+using JetBrains.Annotations;
 using UdonSharp;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ namespace Varneon.UdonPrefabs.Core
         /// Logs a message
         /// </summary>
         /// <param name="message">String or object to be converted to string representation for display</param>
+        [PublicAPI]
         public virtual void _Log(object message)
         {
             Log(LogType.Log, message);
@@ -24,6 +26,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="message">String or object to be converted to string representation for display</param>
         /// <param name="context">Object to which the message applies</param>
+        [PublicAPI]
         public virtual void _Log(object message, Object context)
         {
             Log(LogType.Log, message, context);
@@ -34,6 +37,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="format">A composite format string</param>
         /// <param name="args">Format arguments</param>
+        [PublicAPI]
         public virtual void _LogFormat(string format, params object[] args)
         {
             LogFormat(LogType.Log, format, args);
@@ -45,6 +49,7 @@ namespace Varneon.UdonPrefabs.Core
         /// <param name="context">Object to which the message applies</param>
         /// <param name="format">A composite format string</param>
         /// <param name="args">Format arguments</param>
+        [PublicAPI]
         public virtual void _LogFormat(Object context, string format, params object[] args)
         {
             LogFormat(LogType.Log, context, format, args);
@@ -54,6 +59,7 @@ namespace Varneon.UdonPrefabs.Core
         /// A variant of _Log that logs a warning message
         /// </summary>
         /// <param name="message">String or object to be converted to string representation for display</param>
+        [PublicAPI]
         public virtual void _LogWarning(object message)
         {
             Log(LogType.Warning, message);
@@ -64,6 +70,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="message">String or object to be converted to string representation for display</param>
         /// <param name="context">Object to which the message applies</param>
+        [PublicAPI]
         public virtual void _LogWarning(object message, Object context)
         {
             Log(LogType.Warning, message, context);
@@ -74,6 +81,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="format">A composite format string</param>
         /// <param name="args">Format arguments</param>
+        [PublicAPI]
         public virtual void _LogWarningFormat(string format, params object[] args)
         {
             LogFormat(LogType.Warning, format, args);
@@ -85,6 +93,7 @@ namespace Varneon.UdonPrefabs.Core
         /// <param name="context">Object to which the message applies</param>
         /// <param name="format">A composite format string</param>
         /// <param name="args">Format arguments</param>
+        [PublicAPI]
         public virtual void _LogWarningFormat(Object context, string format, params object[] args)
         {
             LogFormat(LogType.Warning, context, format, args);
@@ -94,6 +103,7 @@ namespace Varneon.UdonPrefabs.Core
         /// A variant of _Log that logs an error message
         /// </summary>
         /// <param name="message">String or object to be converted to string representation for display</param>
+        [PublicAPI]
         public virtual void _LogError(object message)
         {
             Log(LogType.Error, message);
@@ -104,6 +114,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="message">String or object to be converted to string representation for display</param>
         /// <param name="context">Object to which the message applies</param>
+        [PublicAPI]
         public virtual void _LogError(object message, Object context)
         {
             Log(LogType.Error, message, context);
@@ -114,6 +125,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="format">A composite format string</param>
         /// <param name="args">Format arguments</param>
+        [PublicAPI]
         public virtual void _LogErrorFormat(string format, params object[] args)
         {
             LogFormat(LogType.Error, format, args);
@@ -125,6 +137,7 @@ namespace Varneon.UdonPrefabs.Core
         /// <param name="context">Object to which the message applies</param>
         /// <param name="format">A composite format string</param>
         /// <param name="args">Format arguments</param>
+        [PublicAPI]
         public virtual void _LogErrorFormat(Object context, string format, params object[] args)
         {
             LogFormat(LogType.Error, context, format, args);
@@ -134,6 +147,7 @@ namespace Varneon.UdonPrefabs.Core
         /// Assert a condition and logs an error message on failure
         /// </summary>
         /// <param name="condition">Condition you expect to be true</param>
+        [PublicAPI]
         public virtual void _Assert(bool condition)
         {
             if (!condition)
@@ -147,6 +161,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="condition">Condition you expect to be true</param>
         /// <param name="context">Object to which the message applies</param>
+        [PublicAPI]
         public virtual void _Assert(bool condition, Object context)
         {
             if (!condition)
@@ -160,6 +175,7 @@ namespace Varneon.UdonPrefabs.Core
         /// </summary>
         /// <param name="condition">Condition you expect to be true</param>
         /// <param name="message">String or object to be converted to string representation for display</param>
+        [PublicAPI]
         public virtual void _Assert(bool condition, object message)
         {
             if (!condition)
@@ -174,6 +190,7 @@ namespace Varneon.UdonPrefabs.Core
         /// <param name="condition">Condition you expect to be true</param>
         /// <param name="message">String or object to be converted to string representation for display</param>
         /// <param name="context">Object to which the message applies</param>
+        [PublicAPI]
         public virtual void _Assert(bool condition, object message, Object context)
         {
             if (!condition)
@@ -185,12 +202,14 @@ namespace Varneon.UdonPrefabs.Core
         /// <summary>
         /// Clears the logs
         /// </summary>
+        [PublicAPI]
         public virtual void _ClearLogs() { }
 
         /// <summary>
         /// Clears the logs
         /// </summary>
         /// <param name="logType">Type of message e.g. warn or error etc</param>
+        [PublicAPI]
         public virtual void _ClearLogs(LogType logType) { }
 
         /// <summary>
