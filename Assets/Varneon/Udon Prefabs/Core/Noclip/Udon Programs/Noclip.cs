@@ -323,7 +323,7 @@ namespace Varneon.UdonPrefabs.Core
         public override void OnPlayerLeft(VRCPlayerApi player)
         {
             // If the local player just left and noclip is enabled, disable it to prevent any unnecessary errors when leaving the world
-            if (player.isLocal && noclipEnabled)
+            if (noclipEnabled && !Utilities.IsValid(player))
             {
                 noclipEnabled = false;
             }
