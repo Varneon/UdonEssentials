@@ -3,7 +3,7 @@
     /// <summary>
     /// Method for calibrating a seat
     /// </summary>
-    internal enum SeatCalibrationMethod
+    public enum SeatCalibrationMethod
     {
         /// <summary>
         /// No calibration
