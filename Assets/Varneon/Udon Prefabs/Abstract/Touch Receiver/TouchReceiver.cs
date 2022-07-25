@@ -9,8 +9,8 @@ namespace Varneon.UdonPrefabs.Abstract
     /// </summary>
     public abstract class TouchReceiver : UdonSharpBehaviour
     {
-        public virtual void _OnInteractTrackerEntered(TrackerType type, Transform tracker) { }
+        public abstract void _OnInteractTrackerEntered(TrackerType type, Transform tracker);
 
-        public virtual void _OnInteractTrackerExited(TrackerType type) { }
+        public abstract void _OnInteractTrackerExited(TrackerType type);
     }
 }
