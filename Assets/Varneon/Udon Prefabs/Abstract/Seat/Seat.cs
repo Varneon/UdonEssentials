@@ -75,32 +75,32 @@ namespace Varneon.UdonPrefabs.Abstract
         /// <summary>
         /// Local player
         /// </summary>
-        private protected VRCPlayerApi localPlayer;
+        protected VRCPlayerApi localPlayer { get; private set; }
 
         /// <summary>
         /// ID of the local player
         /// </summary>
-        private protected int localPlayerId;
+        protected int localPlayerId { get; private set; }
 
         /// <summary>
         /// Is the local player in VR
         /// </summary>
-        private bool vrEnabled;
+        protected bool vrEnabled { get; private set; }
 
         /// <summary>
         /// Is the local player currently sitting in the seat
         /// </summary>
-        private bool isLocalPlayerSitting;
+        protected bool isLocalPlayerSitting { get; private set; }
 
         /// <summary>
         /// VRCStation component attached to the seat
         /// </summary>
-        private protected VRCStation station;
+        protected VRCStation station { get; private set; }
 
         /// <summary>
         /// PlayerEnterLocation of the VRCStation attached to the seat
         /// </summary>
-        private Transform seatEnterLocation;
+        protected Transform seatEnterLocation { get; private set; }
 
         /// <summary>
         /// The original angle of the seat before player has attempted to sit on it
