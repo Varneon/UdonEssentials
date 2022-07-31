@@ -12,3 +12,11 @@
 !/Assets/Varneon/Resources/Icons
 !/Assets/Varneon/Udon Prefabs
 !/Packages/com.varneon.v-inspector
+/Assets/Varneon/Udon Prefabs/Core/Tween.meta
+/Assets/Varneon/Udon Prefabs/Core/Tween/*
+/Assets/Varneon/Udon Prefabs/Abstract/Notification.meta
+/Assets/Varneon/Udon Prefabs/Abstract/Notification/*
+/Assets/Varneon/Udon Prefabs/Abstract/Notification Provider.meta
+/Assets/Varneon/Udon Prefabs/Abstract/Notification Provider/*
+/Assets/Varneon/Udon Prefabs/Essentials/Notifications.meta
+/Assets/Varneon/Udon Prefabs/Essentials/Notifications/*
