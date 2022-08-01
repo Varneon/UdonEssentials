@@ -1,6 +1,7 @@
 ﻿using JetBrains.Annotations;
 using UdonSharp;
 using VRC.SDKBase;
+using Varneon.UdonPrefabs.Common.VRCEnums;
 
 namespace Varneon.UdonPrefabs.Core
 {
@@ -125,6 +126,75 @@ namespace Varneon.UdonPrefabs.Core
         #endregion
 
         #region Public API Methods
+        /// <summary>
+        /// Adds a handler
+        /// </summary>
+        /// <param name="eventType">Event type which the handler gets added for</param>
+        /// <param name="handler">Handler behaviour with the handler method which will be called</param>
+        [PublicAPI]
+        public void _AddHandler(VRCUpdateEventType eventType, UdonSharpBehaviour handler)
+        {
+            switch (eventType)
+            {
+                case VRCUpdateEventType.FixedUpdate:
+                    _AddFixedUpdateHandler(handler);
+                    break;
+                case VRCUpdateEventType.Update:
+                    _AddUpdateHandler(handler);
+                    break;
+                case VRCUpdateEventType.LateUpdate:
+                    _AddLateUpdateHandler(handler);
+                    break;
+                case VRCUpdateEventType.PostLateUpdate:
+                    _AddPostLateUpdateHandler(handler);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Removes a handler
+        /// </summary>
+        /// <param name="eventType">Event type which the handler gets removed for</param>
+        /// <param name="handler">Handler behaviour</param>
+        [PublicAPI]
+        public void _RemoveHandler(VRCUpdateEventType eventType, UdonSharpBehaviour handler)
+        {
+            switch (eventType)
+            {
+                case VRCUpdateEventType.FixedUpdate:
+                    _RemoveFixedUpdateHandler(handler);
+                    break;
+                case VRCUpdateEventType.Update:
+                    _RemoveUpdateHandler(handler);
+                    break;
+                case VRCUpdateEventType.LateUpdate:
+                    _RemoveLateUpdateHandler(handler);
+                    break;
+                case VRCUpdateEventType.PostLateUpdate:
+                    _RemovePostLateUpdateHandler(handler);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Sets event handler active state
+        /// </summary>
+        /// <param name="eventType">Event type</param>
+        /// <param name="handler">Handler behaviour</param>
+        /// <param name="active">Should the handler be active or not</param>
+        [PublicAPI]
+        public void _SetHandlerActive(VRCUpdateEventType eventType, UdonSharpBehaviour handler, bool active)
+        {
+            if (active)
+            {
+                _AddHandler(eventType, handler);
+            }
+            else
+            {
+                _RemoveHandler(eventType, handler);
+            }
+        }
+
         /// <summary>
         /// Add handler for FixedUpdate()
         /// </summary>
