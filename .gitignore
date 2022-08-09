@@ -12,14 +12,19 @@
 !/Assets/Varneon/Resources/Icons
 !/Assets/Varneon/Udon Prefabs
 !/Packages/com.varneon.v-inspector
+/Assets/Varneon/Udon Prefabs/Core/HUD.meta
+/Assets/Varneon/Udon Prefabs/Core/HUD/*
 /Assets/Varneon/Udon Prefabs/Core/Tween.meta
 /Assets/Varneon/Udon Prefabs/Core/Tween/*
+/Assets/Varneon/Udon Prefabs/Core/World Update Handler.meta
+/Assets/Varneon/Udon Prefabs/Core/World Update Handler/*
 /Assets/Varneon/Udon Prefabs/Abstract/Notification.meta
 /Assets/Varneon/Udon Prefabs/Abstract/Notification/*
 /Assets/Varneon/Udon Prefabs/Abstract/Notification Provider.meta
 /Assets/Varneon/Udon Prefabs/Abstract/Notification Provider/*
 /Assets/Varneon/Udon Prefabs/Essentials/Notifications.meta
 /Assets/Varneon/Udon Prefabs/Essentials/Notifications/*
+/Assets/Varneon/Udon Prefabs/Components.meta
 /Assets/Varneon/Udon Prefabs/Components/Layermask Dropdown.meta
 /Assets/Varneon/Udon Prefabs/Components/Layermask Dropdown/*
 /Assets/Varneon/Udon Prefabs/Runtime Tools/Raycast Monitor.meta
