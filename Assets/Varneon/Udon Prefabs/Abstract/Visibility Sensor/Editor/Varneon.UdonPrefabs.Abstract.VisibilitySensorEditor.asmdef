@@ -1,0 +1,17 @@
+{
+    "name": "Varneon.UdonPrefabs.Abstract.VisibilitySensorEditor",
+    "references": [
+        "GUID:145e2692c31b1144da594c7e936e4eae"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
