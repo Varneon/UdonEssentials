@@ -11,6 +11,7 @@ namespace Varneon.UdonPrefabs.Core
     /// <summary>
     /// Simple noclip
     /// </summary>
+    [SelectionBase]
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class Noclip : UdonSharpBehaviour
     {

@@ -10,6 +10,7 @@ using VRC.SDKBase;
 
 namespace Varneon.UdonPrefabs.Essentials
 {
+    [SelectionBase]
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
     public class Playerlist : UdonSharpBehaviour
     {
