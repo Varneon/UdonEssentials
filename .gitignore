@@ -14,6 +14,8 @@
 !/Packages/com.varneon.v-inspector
 /Assets/Varneon/Udon Prefabs/Core/HUD.meta
 /Assets/Varneon/Udon Prefabs/Core/HUD/*
+/Assets/Varneon/Udon Prefabs/Core/Input Event Dispatcher.meta
+/Assets/Varneon/Udon Prefabs/Core/Input Event Dispatcher/*
 /Assets/Varneon/Udon Prefabs/Core/Tween.meta
 /Assets/Varneon/Udon Prefabs/Core/Tween/*
 /Assets/Varneon/Udon Prefabs/Core/World Update Handler.meta
