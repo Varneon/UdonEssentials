@@ -49,16 +49,16 @@ namespace Varneon.UdonPrefabs.Essentials
         private RectTransform Songs;
 
         [SerializeField]
-        private GameObject PlaylistItem, SongItem, ErrorPrompt;
+        private GameObject PlaylistItem, SongItem, ErrorPrompt, SyncedPlaybackOverlay, OwnershipLockToggle, OwnershipLockedIcon, OwnershipUnlockedIcon;
 
         [SerializeField]
-        private Text ErrorText, TimeElapsed, TimeLength, TextTitle, TextArtist, TextPlaylist, TextLoading, TextPlaylistDescription;
+        private Text ErrorText, TimeElapsed, TimeLength, TextTitle, TextArtist, TextPlaylist, TextLoading, TextPlaylistDescription, SyncedStateInfo;
 
         [SerializeField]
         private RectTransform LoadingIcon, VolumeIcons, CopyrightedPlaylistNotice;
 
         [SerializeField]
-        private Button ButtonPlay, ButtonPause, ButtonNext, ButtonPrev, ButtonShuffle, ButtonShufflePlaylist, ButtonRepeat, ButtonRepeatOne;
+        private Button ButtonPlay, ButtonPause, ButtonNext, ButtonPrev, ButtonShuffle, ButtonShufflePlaylist, ButtonRepeat, ButtonRepeatOne, ButtonClaimOwnership;
 
         [SerializeField]
         private Toggle ToggleAllowCopyrightedPlaylists;
@@ -140,17 +140,64 @@ namespace Varneon.UdonPrefabs.Essentials
 
         private bool isRateLimited;
 
+        private TunifySync sync;
+
+        private bool isSynced;
+
+        private int syncedStartTimeInServerMS;
+
+        private float syncedTime;
+
+        private bool isLocalPlayerOwner;
+
+        private bool allowOwnershipClaims;
+
         private const float RATE_LIMIT_SECONDS = 5f;
+        #endregion
+
+        #region Internal Properties
+        internal bool AllowOwnershipClaims
+        {
+            get => allowOwnershipClaims;
+            set
+            {
+                Log($"AllowOwnershipClaims = {value}");
+
+                if(allowOwnershipClaims != value)
+                {
+                    _SetAllowOwnershipClaims(value);
+
+                    sync._SetAllowOwnershipClaims(value);
+                }
+            }
+        }
         #endregion
 
         #region Unity Methods
         private void Start()
         {
+            sync = GetComponent<TunifySync>();
+
+            if(sync != null)
+            {
+                sync._Link(this);
+
+                isSynced = true;
+
+                OwnershipLockToggle.SetActive(true);
+
+                Log("Successfully linked to TunifySync!");
+            }
+
             player = (VRCUnityVideoPlayer)GetComponent(typeof(VRCUnityVideoPlayer));
 
             volumeIcons = VolumeIcons.GetComponentsInChildren<Image>(true);
 
             ToggleAllowCopyrightedPlaylists.isOn = !DisableCopyrightedAutoplay;
+
+            TextTitle.text = string.Empty;
+
+            TextArtist.text = string.Empty;
 
             InitializePlaylists();
 
@@ -214,6 +261,11 @@ namespace Varneon.UdonPrefabs.Essentials
 
         public void _Pause()
         {
+            if (isSynced && isLocalPlayerOwner)
+            {
+                sync._OnSongStopped();
+            }
+
             player.Pause();
 
             UpdatePlayPauseButton(false);
@@ -258,6 +310,11 @@ namespace Varneon.UdonPrefabs.Essentials
 
             if (songIndex == currentSongIndex || songIndex == nextSongIndex) { return; }
 
+            _SelectSong(songIndex);
+        }
+
+        public void _SelectSong(int songIndex)
+        {
             nextSongIndex = songIndex;
 
             if (PlayOnStart) { PlayOnStart = false; }
@@ -347,7 +404,14 @@ namespace Varneon.UdonPrefabs.Essentials
 
         public void _EndSeek()
         {
-            player.SetTime(TimeProgressBar.value * songDuration);
+            float seconds = TimeProgressBar.value * songDuration;
+
+            if (isSynced && isLocalPlayerOwner)
+            {
+                sync._OnSongStarted(currentSongIndex, seconds);
+            }
+
+            player.SetTime(seconds);
 
             SetSliderHighlight(TimeProgressBar, seeking = false);
         }
@@ -382,6 +446,61 @@ namespace Varneon.UdonPrefabs.Essentials
             hasUserConfirmedError = true;
 
             ErrorPrompt.SetActive(false);
+        }
+
+        public void _ApplySyncedStartTime(int startTimeInServerMS, float offset = 0f)
+        {
+            syncedStartTimeInServerMS = startTimeInServerMS;
+
+            syncedTime = offset;
+        }
+
+        public void _SetPlaybackTime(float time)
+        {
+            player.SetTime(time);
+        }
+
+        public void _ToggleAllowOwnershipClaims()
+        {
+            Log("_ToggleAllowOwnershipClaims()");
+
+            if (isSynced && isLocalPlayerOwner)
+            {
+                AllowOwnershipClaims ^= true;
+            }
+        }
+
+        public void _ClaimOwnership()
+        {
+            Log("_ClaimOwnership()");
+
+            sync._ClaimOwnership();
+        }
+
+        internal void _SetAllowOwnershipClaims(bool allowClaims)
+        {
+            Log($"_SetAllowOwnershipClaims({allowClaims})");
+
+            allowOwnershipClaims = allowClaims;
+
+            GenerateSyncedPlaybackStateInfo();
+
+            ButtonClaimOwnership.interactable = allowClaims;
+
+            OwnershipLockedIcon.SetActive(!allowClaims);
+
+            OwnershipUnlockedIcon.SetActive(allowClaims);
+
+            ButtonClaimOwnership.interactable = allowClaims;
+        }
+
+        internal void _SetLocalPlayerOwnerStatus(bool isOwner)
+        {
+            isLocalPlayerOwner = isOwner;
+
+            SyncedPlaybackOverlay.SetActive(!isOwner);
+
+            GenerateSyncedPlaybackStateInfo();
         }
         #endregion
 
@@ -450,6 +569,11 @@ namespace Varneon.UdonPrefabs.Essentials
             return 0;
         }
         #endregion
+
+        private void GenerateSyncedPlaybackStateInfo()
+        {
+            SyncedStateInfo.text = string.Format("Owner: {0}\n\nAllow ownership claim: {1}", Networking.GetOwner(gameObject).displayName, AllowOwnershipClaims);
+        }
 
         /// <summary>
         /// Initialize the list of playlists when the program starts
@@ -618,6 +742,13 @@ namespace Varneon.UdonPrefabs.Essentials
         /// <param name="index"></param>
         private void LoadAndPlaySong(int index)
         {
+            if (isSynced && isLocalPlayerOwner)
+            {
+                sync._OnSongSelected(index);
+
+                //SetPlayPauseButtonsInteractable(false);
+            }
+
             if (loading) { return; }
 
             nextSongIndex = index;
@@ -638,7 +769,7 @@ namespace Varneon.UdonPrefabs.Essentials
 
             SetNavigationButtonsInteractable(false);
 
-            SendCustomEventDelayedSeconds(nameof(_DisableRateLimiting), RATE_LIMIT_SECONDS);
+            SendCustomEventDelayedSeconds(nameof(_DisableRateLimiting), isSynced ? RATE_LIMIT_SECONDS * 2f : RATE_LIMIT_SECONDS);
 
             Log($"<color=#DCDCAA>{nameof(LoadAndPlaySong)}</color>(<color=#4887BF>int</color> <color=#9CDCFE>index</color>: <color=#B5CEA8>{index}</color>) | <color=Grey><color=Silver>{Titles[nextSongIndex]}</color> - <color=Silver>{Artists[nextSongIndex]}</color> (<color=Silver>{Urls[nextSongIndex]}</color>)</color>");
 
@@ -990,6 +1121,11 @@ namespace Varneon.UdonPrefabs.Essentials
         #region VRC Video Methods
         public override void OnVideoEnd()
         {
+            if (isSynced && isLocalPlayerOwner)
+            {
+                sync._OnSongStopped();
+            }
+
             Log($"<color=#DCDCAA>{nameof(OnVideoEnd)}</color>()");
 
             TimeProgressBar.fillRect.gameObject.SetActive(false);
@@ -1000,9 +1136,11 @@ namespace Varneon.UdonPrefabs.Essentials
 
             if (loading) { return; }
 
-            if (repeatOne) { player.SetTime(0f); player.Play(); return; }
+            if (repeatOne && (isSynced == isLocalPlayerOwner)) { player.SetTime(0f); player.Play(); return; }
 
             HighlightSongListItem(false);
+
+            if (isSynced && !isLocalPlayerOwner) { return; }
 
             AutoPlayNextOrRandom();
         }
@@ -1026,6 +1164,11 @@ namespace Varneon.UdonPrefabs.Essentials
             UpdatePlayingPlaylistIcon(true);
 
             SetNextSongAsCurrent();
+
+            if (isSynced)
+            {
+                sync._OnSongStarted(currentSongIndex, player.GetTime());
+            }
         }
 
         public override void OnVideoReady()
