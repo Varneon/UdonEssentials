@@ -112,15 +112,11 @@ namespace Varneon.UdonPrefabs.Essentials
         {
             if (player.playerId > playerCount) { UpdateTotalPlayerCount(player.playerId); }
 
-            GameObject newPlayerlistPanel = VRCInstantiate(PlayerListItem);
+            GameObject newPlayerlistPanel = Instantiate(PlayerListItem, PlayerList.transform, false);
 
             newPlayerlistPanel.SetActive(true);
 
             Transform t = newPlayerlistPanel.transform;
-            t.SetParent(PlayerList.transform);
-            t.localPosition = Vector3.zero;
-            t.localEulerAngles = Vector3.zero;
-            t.localScale = Vector3.one;
 
             Text[] texts = t.GetComponentsInChildren<Text>(true);
 
