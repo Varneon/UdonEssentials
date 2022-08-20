@@ -15,3 +15,7 @@
 .unity-foldout > .unity-foldout__content {
     -unity-font-style: bold;
 }
+
+.unity-foldout > .unity-label {
+    white-space: normal;
+}
