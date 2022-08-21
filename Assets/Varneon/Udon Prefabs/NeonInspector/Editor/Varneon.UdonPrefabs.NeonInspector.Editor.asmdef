@@ -1,9 +1,9 @@
 {
     "name": "Varneon.UdonPrefabs.NeonInspector.Editor",
     "references": [
-        "GUID:d00ca0ce71ee46a479e9fc8b46d46546",
-        "GUID:777d0b7967be5824a875d13130a28a1c",
-        "GUID:99835874ee819da44948776e0df4ff1d"
+        "Varneon.V-Inspector",
+        "Varneon.V-Inspector.Attributes",
+        "UdonSharp.Runtime"
     ],
     "includePlatforms": [
         "Editor"

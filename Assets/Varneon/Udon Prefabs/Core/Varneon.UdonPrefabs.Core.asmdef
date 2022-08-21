@@ -1,21 +1,13 @@
 {
     "name": "Varneon.UdonPrefabs.Core",
     "references": [
-        "GUID:99835874ee819da44948776e0df4ff1d",
-        "GUID:777d0b7967be5824a875d13130a28a1c",
-        "GUID:3c1bc1267eab5884ebe7f232c09ee0d9",
-        "GUID:09ceb68fdd9cfc8469a0065fc6f8808b",
-        "GUID:145e2692c31b1144da594c7e936e4eae"
+        "UdonSharp.Runtime",
+        "Varneon.V-Inspector.Attributes",
+        "VRC.Udon",
+        "Varneon.UdonPrefabs.Common",
+        "Varneon.UdonPrefabs.Abstract"
     ],
-    "includePlatforms": [
-        "Android",
-        "Editor",
-        "iOS",
-        "LinuxStandalone64",
-        "WSA",
-        "WindowsStandalone32",
-        "WindowsStandalone64"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
