@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Varneon.UdonPrefabs.Essentials.Editor
+namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
 {
     public class Preferences : ScriptableObject
     {

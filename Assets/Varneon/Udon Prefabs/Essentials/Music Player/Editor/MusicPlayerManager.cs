@@ -1,6 +1,6 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UdonSharp;
 using UdonSharpEditor;
 using UnityEditor;
@@ -8,10 +8,12 @@ using UnityEditorInternal;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
-using Playlist = Varneon.UdonPrefabs.Essentials.Editor.MusicLibrary.Playlist;
-using Song = Varneon.UdonPrefabs.Essentials.Editor.MusicLibrary.Song;
+using VRC.Udon.Common.Interfaces;
+using Playlist = Varneon.UdonPrefabs.Essentials.MusicPlayerEditor.MusicLibrary.Playlist;
+using Song = Varneon.UdonPrefabs.Essentials.MusicPlayerEditor.MusicLibrary.Song;
+using Object = UnityEngine.Object;
 
-namespace Varneon.UdonPrefabs.Essentials.Editor
+namespace Varneon.UdonPrefabs.Essentials.MusicPlayerEditor
 {
     public class MusicPlayerManager : EditorWindow
     {
@@ -43,22 +45,28 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private Playlist tempPlaylist;
 
-        private string newPlaylistName;
+        private string newPlaylistName, playlistDescription;
 
         private bool creatingNewPlaylist, renamingPlaylist, pendingChanges;
 
+        private PlaylistArguments playlistArguments = new PlaylistArguments();
+
         private UdonSharpProgramAsset playerProgram;
 
-        private static readonly string LibraryPath = "Assets/Varneon/Udon Prefabs/Essentials/Music Player/Music Library/";
+        private const string LogPrefix = "[<color=#4488CC>Music Player Manager</color>]:";
 
-        private static readonly string LogPrefix = "[<color=#000099>Music Player Manager</color>]:";
+        private struct PlaylistArguments
+        {
+            public bool UseAutoplay;
+            public bool IsCopyrighted;
+        }
 
         [MenuItem("Varneon/Udon Prefab Editors/Music Player Manager")]
         public static void Init()
         {
             EditorWindow window = GetWindow<MusicPlayerManager>();
             window.titleContent.text = "Music Player Manager";
-            window.titleContent.image = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Varneon/Udon Prefabs/Essentials/Music Player/Textures/Note.png");
+            window.titleContent.image = Resources.Load<Texture2D>("Icons/Note");
             window.minSize = new Vector2(800, 500);
             window.Show();
         }
@@ -87,7 +95,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
             playlistList.onSelectCallback = (ReorderableList l) =>
             {
-                GetSongsFromPlaylist(playlistList.index);
+                LoadPlaylistFromLibrary(playlistList.index);
             };
 
             playlistList.onReorderCallback = (ReorderableList l) =>
@@ -104,22 +112,27 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 rect.y += 2;
 
                 EditorGUI.PropertyField(
-                    new Rect(rect.x, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("Name"), GUIContent.none);
 
                 EditorGUI.PropertyField(
-                    new Rect(rect.x + rect.width / 3f, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x + rect.width / 4f, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("Artist"), GUIContent.none);
 
                 EditorGUI.PropertyField(
-                    new Rect(rect.x + (rect.width / 3f) * 2, rect.y, rect.width / 3f, EditorGUIUtility.singleLineHeight),
+                    new Rect(rect.x + (rect.width / 4f) * 2, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
                     element.FindPropertyRelative("URL"), GUIContent.none);
+
+                EditorGUI.PropertyField(
+                    new Rect(rect.x + (rect.width / 4f) * 3, rect.y, rect.width / 4f, EditorGUIUtility.singleLineHeight),
+                    element.FindPropertyRelative("Tags"), GUIContent.none);
             };
 
             songList.drawHeaderCallback = (Rect rect) => {
-                EditorGUI.LabelField(new Rect(rect.x + 15, rect.y, rect.width / 3f, rect.height), "Title");
-                EditorGUI.LabelField(new Rect(rect.x + 10 + rect.width / 3f, rect.y, rect.width / 3f, rect.height), "Artist");
-                EditorGUI.LabelField(new Rect(rect.x + 5 + rect.width / 1.5f, rect.y, rect.width / 3f, rect.height), "URL");
+                EditorGUI.LabelField(new Rect(rect.x + 15, rect.y, rect.width / 4f, rect.height), "Title");
+                EditorGUI.LabelField(new Rect(rect.x + 10 + rect.width / 4f, rect.y, rect.width / 4f, rect.height), "Artist");
+                EditorGUI.LabelField(new Rect(rect.x + 5 + rect.width / 4f * 2, rect.y, rect.width / 4f, rect.height), "URL");
+                EditorGUI.LabelField(new Rect(rect.x + 5 + rect.width / 4f * 3, rect.y, rect.width / 4f, rect.height), "Tags");
             };
 
             songList.onReorderCallback = (ReorderableList l) =>
@@ -157,366 +170,390 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
         {
             if (EditorApplication.isPlaying) return;
 
-            GUILayout.BeginHorizontal(EditorStyles.helpBox, new GUILayoutOption[] { GUILayout.Height(175) });
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox, new GUILayoutOption[] { GUILayout.Height(175) }))
+            {
+                using (new GUILayout.VerticalScope())
+                {
+                    DrawBanner();
 
-            GUILayout.BeginVertical();
+                    using (new EditorGUI.DisabledScope(creatingNewPlaylist || renamingPlaylist))
+                    {
+                        DrawFieldMusicPlayers();
 
-            DrawBanner();
+                        DrawFieldLibraryFile();
+                    }
+                }
 
-            EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
+                using (new EditorGUI.DisabledScope(activeLibrary == null))
+                {
+                    DrawFieldPlaylistList();
+                }
+            }
 
-            DrawFieldMusicPlayers();
+            using (new EditorGUI.DisabledScope(creatingNewPlaylist || renamingPlaylist || activeLibrary == null))
+            {
+                DrawFieldPlaylistArguments();
 
-            DrawFieldLibraryFile();
+                DrawFieldSonglist();
 
-            EditorGUI.EndDisabledGroup();
+                GUILayout.FlexibleSpace();
 
-            GUILayout.EndVertical();
-
-            EditorGUI.BeginDisabledGroup(activeLibrary == null);
-
-            DrawFieldPlaylistList();
-
-            EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
-
-            GUILayout.EndHorizontal();
-
-            DrawFieldSonglist();
-
-            GUILayout.FlexibleSpace();
-
-            DrawFieldPlaylistActions();
-
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.EndDisabledGroup();
+                DrawFieldLibraryActions();
+            }
         }
 
         #region Panels
         private void DrawFieldMusicPlayers()
         {
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUILayout.Label("Active Music Player:", GUILayout.Width(120));
-
-            DrawFieldHighlightPanel(player);
-
-            EditorGUI.BeginChangeCheck();
-
-            player = (Tunify)EditorGUILayout.ObjectField(player, typeof(Tunify), true);
-
-            if (EditorGUI.EndChangeCheck())
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                GetPlayerIndex();
+                GUILayout.Label("Active Music Player:");
 
-                RefreshPlayerStats();
+                BeginHorizontalHighlightPanel(player);
+
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    player = (Tunify)EditorGUILayout.ObjectField(player, typeof(Tunify), true);
+
+                    if (scope.changed)
+                    {
+                        GetPlayerIndex();
+
+                        RefreshPlayerStats();
+                    }
+                }
+
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    playerIndex = EditorGUILayout.Popup(playerIndex, playerNames, GUILayout.Width(120));
+
+                    if (scope.changed)
+                    {
+                        player = playersInScene[playerIndex];
+
+                        so.ApplyModifiedProperties();
+
+                        RefreshPlayerStats();
+                    }
+                }
+
+                GUILayout.EndHorizontal();
+
+                using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
+                {
+                    GUILayout.Label($"Songs: {playerSongCount} | Playlists: {playerPlaylistCount}");
+
+                    using (new EditorGUI.DisabledScope(player == null))
+                    {
+                        if (GUILayout.Button("Save To File", GUILayout.MaxWidth(85)))
+                        {
+                            SavePlayerPlaylistsToLibrary();
+                        }
+                    }
+                }
             }
-
-            EditorGUI.BeginChangeCheck();
-
-            playerIndex = EditorGUILayout.Popup(playerIndex, playerNames, GUILayout.Width(120));
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                player = playersInScene[playerIndex];
-
-                so.ApplyModifiedProperties();
-
-                RefreshPlayerStats();
-            }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label($"Songs: {playerSongCount} | Playlists: {playerPlaylistCount}");
-
-            EditorGUI.BeginDisabledGroup(player == null);
-
-            if (GUILayout.Button("Save To File", GUILayout.MaxWidth(85)))
-            {
-                SavePlayerPlaylistsToLibrary();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
         }
 
         private void DrawFieldLibraryFile()
         {
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUILayout.Label("Active Music Library:", GUILayout.Width(125));
-
-            DrawFieldHighlightPanel(proxyLibrary);
-
-            EditorGUI.BeginChangeCheck();
-
-            proxyLibrary = (MusicLibrary)EditorGUILayout.ObjectField(proxyLibrary, typeof(MusicLibrary), false);
-
-            if (EditorGUI.EndChangeCheck())
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                PendingChangesPrompt();
+                GUILayout.Label("Active Music Library:");
 
-                SetActiveLibrary(proxyLibrary);
+                BeginHorizontalHighlightPanel(proxyLibrary);
 
-                if (activeLibrary != null)
+                using (var scope = new EditorGUI.ChangeCheckScope())
                 {
-                    ImportPlaylistsFromLibrary();
+                    proxyLibrary = (MusicLibrary)EditorGUILayout.ObjectField(proxyLibrary, typeof(MusicLibrary), false);
+
+                    if (scope.changed)
+                    {
+                        PendingChangesPrompt();
+
+                        SetActiveLibrary(proxyLibrary);
+
+                        if (activeLibrary != null)
+                        {
+                            ImportPlaylistsFromLibrary();
+                        }
+                    }
                 }
-            }
 
-            if (GUILayout.Button("Browse", GUILayout.Width(60)))
-            {
-                PendingChangesPrompt();
+                if (GUILayout.Button("Browse", GUILayout.Width(60)))
+                {
+                    PendingChangesPrompt();
 
-                BrowseLibraryFile();
-            }
-            else if (GUILayout.Button("New", GUILayout.Width(40)))
-            {
-                PendingChangesPrompt();
+                    BrowseLibraryFile();
+                }
+                else if (GUILayout.Button("New", GUILayout.Width(40)))
+                {
+                    PendingChangesPrompt();
 
-                string path = EditorUtility.SaveFilePanelInProject("Create new music library file", "MusicLibrary", "asset", "Create new music library", LibraryPath);
+                    string path = EditorUtility.SaveFilePanelInProject("Create new music library file", "MusicLibrary", "asset", "Create new music library");
 
-                CreateNewLibraryFile(path);
-            }
+                    CreateNewLibraryFile(path);
+                }
 
-            EditorGUI.BeginDisabledGroup(!activeLibrary);
-
-            if (isActiveLibraryDefault)
-            {
-                GUILayout.Label("Default Library", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
-            }
-            else if (GUILayout.Button("Set As Default", GUILayout.Width(100)))
-            {
-                SetActiveLibraryAsDefault();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
-
-            if(isActiveLibraryDemo)
-            {
-                GUI.color = Color.yellow;
-
-                GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-                GUI.color = Color.white;
-
-                GUILayout.Label("DemoMusicLibrary is part of UdonEssentials files and will get overwritten when updating the package! Please create a new playlist or change the name of the file if you want to use this library.", EditorStyles.wordWrappedLabel);
+                using (new EditorGUI.DisabledScope(!activeLibrary))
+                {
+                    if (isActiveLibraryDefault)
+                    {
+                        GUILayout.Label("Default Library", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
+                    }
+                    else if (GUILayout.Button("Set As Default", GUILayout.Width(100)))
+                    {
+                        SetActiveLibraryAsDefault();
+                    }
+                }
 
                 GUILayout.EndHorizontal();
-            }
 
-            GUILayout.EndVertical();
+                if (isActiveLibraryDemo)
+                {
+                    GUI.color = Color.yellow;
+
+                    using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
+                    {
+                        GUI.color = Color.white;
+
+                        GUILayout.Label("DemoMusicLibrary is part of UdonEssentials files and will get overwritten when updating the package! Please create a new playlist or change the name of the file if you want to use this library.", EditorStyles.wordWrappedLabel);
+                    }
+                }
+            }
         }
 
         private void DrawFieldPlaylistList()
         {
-            GUILayout.BeginVertical(new GUILayoutOption[] { GUILayout.Width(Screen.width / 2f) });
-
-            EditorGUI.BeginDisabledGroup(creatingNewPlaylist || renamingPlaylist);
-
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            scrollPosPlaylists = EditorGUILayout.BeginScrollView(scrollPosPlaylists);
-
-            so.Update();
-
-            playlistList.DoLayoutList();
-
-            so.ApplyModifiedProperties();
-
-            GUILayout.EndHorizontal();
-
-            EditorGUILayout.EndScrollView();
-
-            EditorGUI.EndDisabledGroup();
-
-            #region Playlist Actions
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            if (!creatingNewPlaylist && !renamingPlaylist)
+            using (new GUILayout.VerticalScope(new GUILayoutOption[] { GUILayout.Width(Screen.width / 2f) }))
             {
-                GUILayout.Label("Playlist Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
-
-                GUILayout.FlexibleSpace();
-
-                if (GUILayout.Button("Copy", GUILayout.Width(45)))
+                using (new EditorGUI.DisabledScope(creatingNewPlaylist || renamingPlaylist))
                 {
-                    tempPlaylist = new Playlist(Playlists[playlistList.index].Name);
-
-                    foreach (Song song in Songs)
+                    using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
                     {
-                        tempPlaylist.Songs.Add(song);
+                        using (var scope = new EditorGUILayout.ScrollViewScope(scrollPosPlaylists))
+                        {
+                            scrollPosPlaylists = scope.scrollPosition;
+
+                            so.Update();
+
+                            playlistList.DoLayoutList();
+
+                            so.ApplyModifiedProperties();
+                        }
                     }
                 }
 
-                EditorGUI.BeginDisabledGroup(tempPlaylist.Equals(new Playlist()));
-
-                if (GUILayout.Button("Paste", GUILayout.Width(45)))
+                #region Playlist Actions
+                using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
                 {
-                    Playlists.Add(tempPlaylist);
-
-                    pendingChanges = true;
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                if (GUILayout.Button("Rename", GUILayout.Width(65)))
-                {
-                    newPlaylistName = Playlists[playlistList.index].Name;
-
-                    renamingPlaylist = true;
-                }
-
-                if (GUILayout.Button("Add", GUILayout.Width(40)))
-                {
-                    newPlaylistName = "New Playlist";
-
-                    creatingNewPlaylist = true;
-                }
-
-                EditorGUI.BeginDisabledGroup(Playlists.Count <= 1);
-
-                if (GUILayout.Button(new GUIContent("X", "Remove"), GUILayout.Width(20)))
-                {
-                    RemovePlaylist();
-
-                    pendingChanges = true;
-                }
-
-                EditorGUI.EndDisabledGroup();
-            }
-            else
-            {
-                GUILayout.Label("Playlist Name:");
-
-                newPlaylistName = EditorGUILayout.TextField(newPlaylistName);
-
-                if (GUILayout.Button(renamingPlaylist ? "Rename" : "Create", GUILayout.Width(70)))
-                {
-                    if (renamingPlaylist)
+                    if (!creatingNewPlaylist && !renamingPlaylist)
                     {
-                        WriteSongsToPlaylist(playlistList.index);
+                        GUILayout.Label("Playlist Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
 
-                        Playlists[playlistList.index] = new Playlist(newPlaylistName, Playlists[playlistList.index].Songs);
+                        GUILayout.FlexibleSpace();
+
+                        if (GUILayout.Button("Copy", GUILayout.Width(45)))
+                        {
+                            tempPlaylist = new Playlist(Playlists[playlistList.index].Name);
+
+                            foreach (Song song in Songs)
+                            {
+                                tempPlaylist.Songs.Add(song);
+                            }
+                        }
+
+                        using (new EditorGUI.DisabledScope(tempPlaylist.Equals(new Playlist())))
+                        {
+                            if (GUILayout.Button("Paste", GUILayout.Width(45)))
+                            {
+                                Playlists.Add(tempPlaylist);
+
+                                pendingChanges = true;
+                            }
+                        }
+
+                        if (GUILayout.Button("Rename", GUILayout.Width(65)))
+                        {
+                            newPlaylistName = Playlists[playlistList.index].Name;
+
+                            renamingPlaylist = true;
+                        }
+
+                        if (GUILayout.Button("Add", GUILayout.Width(40)))
+                        {
+                            newPlaylistName = "New Playlist";
+
+                            creatingNewPlaylist = true;
+                        }
+
+                        using (new EditorGUI.DisabledScope(Playlists.Count <= 1))
+                        {
+                            if (GUILayout.Button(new GUIContent("X", "Remove"), GUILayout.Width(20)))
+                            {
+                                RemovePlaylist();
+
+                                pendingChanges = true;
+                            }
+                        }
                     }
                     else
                     {
-                        Playlists.Add(new Playlist(newPlaylistName));
+                        GUILayout.Label("Playlist Name:");
+
+                        newPlaylistName = EditorGUILayout.TextField(newPlaylistName);
+
+                        if (GUILayout.Button(renamingPlaylist ? "Rename" : "Create", GUILayout.Width(70)))
+                        {
+                            if (renamingPlaylist)
+                            {
+                                WriteSongsToPlaylist(playlistList.index);
+
+                                Playlists[playlistList.index] = new Playlist(newPlaylistName, Playlists[playlistList.index].Songs);
+                            }
+                            else
+                            {
+                                Playlists.Add(new Playlist(newPlaylistName));
+                            }
+
+                            pendingChanges = true;
+
+                            ResetPlaylistNameField();
+                        }
+                        else if (GUILayout.Button("Cancel", GUILayout.Width(70)))
+                        {
+                            ResetPlaylistNameField();
+                        }
                     }
-
-                    pendingChanges = true;
-
-                    ResetPlaylistNameField();
                 }
-                else if (GUILayout.Button("Cancel", GUILayout.Width(70)))
+                #endregion
+            }
+        }
+
+        private void DrawFieldPlaylistArguments()
+        {
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
+            {
+                EditorGUI.BeginChangeCheck();
+                using (var scope = new EditorGUI.ChangeCheckScope())
                 {
-                    ResetPlaylistNameField();
+                    playlistArguments.UseAutoplay = GUILayout.Toggle(playlistArguments.UseAutoplay, new GUIContent("Autoplay", "Can this playlist be played automatically at the beginning of the instance or randomly selected while playlist shuffle is active"), GUILayout.ExpandWidth(false));
+
+                    playlistArguments.IsCopyrighted = GUILayout.Toggle(playlistArguments.IsCopyrighted, new GUIContent("Copyrighted", "Does this playlist contain copyrighted content that could potentially lead to issues in e.g. livestreams or videos"), GUILayout.ExpandWidth(false));
+
+                    if (scope.changed)
+                    {
+                        Playlist playlist = Playlists[playlistList.index];
+
+                        playlist.Args = GeneratePlaylistArgumentString(playlistArguments);
+
+                        Playlists[playlistList.index] = playlist;
+
+                        pendingChanges = true;
+                    }
+                }
+
+                GUILayout.Label(new GUIContent("Description:", "Playlist description"), GUILayout.Width(72));
+
+                using (var scope = new EditorGUI.ChangeCheckScope())
+                {
+                    playlistDescription = GUILayout.TextField(playlistDescription);
+
+                    if (scope.changed)
+                    {
+                        Playlist playlist = Playlists[playlistList.index];
+
+                        playlist.Description = playlistDescription;
+
+                        Playlists[playlistList.index] = playlist;
+
+                        pendingChanges = true;
+                    }
                 }
             }
-
-            GUILayout.EndHorizontal();
-            #endregion
-
-            GUILayout.EndVertical();
         }
 
         private void DrawFieldSonglist()
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            scrollPosSongs = EditorGUILayout.BeginScrollView(scrollPosSongs);
-
-            EditorGUI.BeginChangeCheck();
-
-            so.Update();
-
-            songList.DoLayoutList();
-
-            so.ApplyModifiedProperties();
-
-            if (EditorGUI.EndChangeCheck())
+            using ( new GUILayout.HorizontalScope(EditorStyles.helpBox))
             {
-                WriteSongsToPlaylist(playlistList.index);
+                using (var scrollView = new EditorGUILayout.ScrollViewScope(scrollPosSongs))
+                {
+                    scrollPosSongs = scrollView.scrollPosition;
 
-                pendingChanges = true;
+                    using (var scope = new EditorGUI.ChangeCheckScope())
+                    {
+                        so.Update();
+
+                        songList.DoLayoutList();
+
+                        so.ApplyModifiedProperties();
+
+                        if (scope.changed)
+                        {
+                            WriteSongsToPlaylist(playlistList.index);
+
+                            pendingChanges = true;
+                        }
+                    }
+                }
             }
-
-            EditorGUILayout.EndScrollView();
-
-            EditorGUILayout.EndHorizontal();
         }
 
-        private void DrawFieldPlaylistActions()
+        private void DrawFieldLibraryActions()
         {
-            GUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            GUILayout.Label("Library Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
-
-            GUILayout.FlexibleSpace();
-
-            GUI.color = pendingChanges ? new Color(0.75f, 0.5f, 0f) : new Color(0f, 0.75f, 0f);
-
-            GUILayout.Label(pendingChanges ? "Unsaved Changes!" : "Everything Saved!", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
-
-            GUI.color = Color.white;
-
-            EditorGUI.BeginDisabledGroup(!pendingChanges);
-
-            if (GUILayout.Button("Save Library", GUILayout.MaxWidth(90)))
+            using (new GUILayout.HorizontalScope(EditorStyles.helpBox))
             {
-                SaveMusicLibrary();
+                GUILayout.Label("Library Actions:", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(90));
+
+                GUILayout.FlexibleSpace();
+
+                GUI.color = pendingChanges ? new Color(0.75f, 0.5f, 0f) : new Color(0f, 0.75f, 0f);
+
+                GUILayout.Label(pendingChanges ? "Unsaved Changes!" : "Everything Saved!", EditorStyles.centeredGreyMiniLabel, GUILayout.Width(100));
+
+                GUI.color = Color.white;
+
+                using (new EditorGUI.DisabledScope(!pendingChanges))
+                {
+                    if (GUILayout.Button("Save Library", GUILayout.MaxWidth(90)))
+                    {
+                        SaveMusicLibrary();
+                    }
+                }
+
+                using (new EditorGUI.DisabledScope(player == null))
+                {
+                    if (GUILayout.Button("Apply Library To Player", GUILayout.MaxWidth(150)))
+                    {
+                        ApplyPlaylistsToPlayer();
+                    }
+                }
             }
-
-            EditorGUI.EndDisabledGroup();
-
-            EditorGUI.BeginDisabledGroup(player == null);
-
-            if (GUILayout.Button("Apply Library To Player", GUILayout.MaxWidth(150)))
-            {
-                ApplyPlaylistsToPlayer();
-            }
-
-            EditorGUI.EndDisabledGroup();
-
-            GUILayout.EndHorizontal();
         }
 
         private void DrawBanner()
         {
-            GUILayout.BeginVertical();
-
             GUI.color = new Color(0f, 0.5f, 1f);
 
-            GUILayout.BeginVertical(EditorStyles.helpBox);
-
-            GUI.color = Color.white;
-
-            GUILayout.Label("Varneon's Udon Prefabs", EditorStyles.whiteLargeLabel);
-
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
-
-            if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+            using (new GUILayout.VerticalScope(EditorStyles.helpBox))
             {
-                Application.OpenURL("https://github.com/Varneon");
+                GUI.color = Color.white;
+
+                GUILayout.Label("Varneon's Udon Prefabs", EditorStyles.whiteLargeLabel);
+
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.Label("Find more Udon prefabs at:", EditorStyles.whiteLabel, GUILayout.Width(160));
+
+                    if (GUILayout.Button("https://github.com/Varneon", EditorStyles.whiteLabel, GUILayout.Width(165)))
+                    {
+                        Application.OpenURL("https://github.com/Varneon");
+                    }
+                }
             }
-
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndVertical();
-
-            GUILayout.EndVertical();
         }
 
-        private void DrawFieldHighlightPanel(object obj)
+        private void BeginHorizontalHighlightPanel(object obj)
         {
             GUI.color = obj == null ? new Color(1f, 0f, 0f) : Color.white;
 
@@ -543,7 +580,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 return;
             }
 
-            string path = EditorUtility.SaveFilePanelInProject("Create a new music library file", "MusicLibrary", "asset", "Create new music library", LibraryPath);
+            string path = EditorUtility.SaveFilePanelInProject("Create a new music library file", "MusicLibrary", "asset", "Create new music library");
 
             CreateNewLibraryFile(path);
         }
@@ -569,7 +606,18 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
                 preferences.DefaultLibrary = activeLibrary;
 
-                AssetDatabase.CreateAsset(preferences, $"{LibraryPath}Preferences.asset");
+                string path = "Assets/Varneon/Udon Prefabs/Essentials/Music Player/Resources/Preferences.asset";
+
+                string directory = Path.GetDirectoryName(path);
+
+                Debug.Log(directory);
+
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                AssetDatabase.CreateAsset(preferences, path);
 
                 SaveAsset(preferences);
 
@@ -592,7 +640,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
 
         private void LoadPreferences()
         {
-            preferences = AssetDatabase.LoadAssetAtPath<Preferences>($"{LibraryPath}Preferences.asset");
+            preferences = Resources.Load<Preferences>($"Preferences");
         }
 
         private MusicLibrary LoadDefaultOrAnyLibrary()
@@ -647,14 +695,14 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 Playlists.Add(playlist);
             }
 
-            GetSongsFromPlaylist(playlistList.index = 0);
+            LoadPlaylistFromLibrary(playlistList.index = 0);
 
             playlistList.index = playlistList.index;
         }
 
         private void BrowseLibraryFile()
         {
-            string path = EditorUtility.OpenFilePanel("Select music library", LibraryPath, "asset");
+            string path = EditorUtility.OpenFilePanel("Select music library", "Assets", "asset");
 
             if (System.IO.File.Exists(path))
             {
@@ -696,14 +744,50 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             Debug.Log($"{LogPrefix} Music Library Saved Successfully!");
         }
 
-        private void GetSongsFromPlaylist(int playlistIndex)
+        private void LoadPlaylistFromLibrary(int playlistIndex)
         {
+            playlistDescription = Playlists[playlistIndex].Description;
+
+            playlistArguments = ParsePlaylistArguments(Playlists[playlistIndex].Args);
+
             Songs.Clear();
 
             foreach (Song song in Playlists[playlistIndex].Songs)
             {
                 Songs.Add(song);
             }
+        }
+
+        private PlaylistArguments ParsePlaylistArguments(string args)
+        {
+            PlaylistArguments newPlaylistArguments = new PlaylistArguments();
+
+            if (string.IsNullOrEmpty(args)) { return newPlaylistArguments; }
+
+            foreach(string arg in args.Split(' '))
+            {
+                switch (arg.TrimStart('-')[0])
+                {
+                    case 'a':
+                        newPlaylistArguments.UseAutoplay = true;
+                        break;
+                    case 'c':
+                        newPlaylistArguments.IsCopyrighted = true;
+                        break;
+                }
+            }
+
+            return newPlaylistArguments;
+        }
+
+        private string GeneratePlaylistArgumentString(PlaylistArguments args)
+        {
+            List<string> output = new List<string>();
+
+            if (args.UseAutoplay) { output.Add("-a");  }
+            if (args.IsCopyrighted) { output.Add("-c");  }
+
+            return string.Join(" ", output.ToArray());
         }
 
         private void WriteSongsToPlaylist(int playlistIndex)
@@ -715,7 +799,11 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 newSongList.Add(song);
             }
 
-            Playlists[playlistIndex] = new Playlist(Playlists[playlistIndex].Name, newSongList);
+            Playlist playlist = Playlists[playlistIndex];
+
+            playlist.Songs = newSongList;
+
+            Playlists[playlistIndex] = playlist;
         }
 
         private void RemovePlaylist()
@@ -724,7 +812,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
             {
                 Playlists.RemoveAt(playlistList.index);
 
-                GetSongsFromPlaylist(playlistList.index = 0);
+                LoadPlaylistFromLibrary(playlistList.index = 0);
             }
         }
 
@@ -765,26 +853,34 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
         #region Player Actions
         private void ApplyPlaylistsToPlayer()
         {
-            if (PrefabUtility.GetNearestPrefabInstanceRoot(player) != null)
-            {
-                if (!EditorUtility.DisplayDialog("Unpack prefab for playlist update?", "The player prefab has to be unpacked before changing the playlist data.\n\nContinue?", "OK", "Cancel")) { return; }
-
-                PrefabUtility.UnpackPrefabInstance(PrefabUtility.GetNearestPrefabInstanceRoot(player), PrefabUnpackMode.Completely, InteractionMode.UserAction);
-            }
+            List<int> autoplayPlaylistIndices = new List<int>();
+            List<int> copyrightFreePlaylistIndices = new List<int>();
+            List<int> autoplayCopyrightFreePlaylistIndices = new List<int>();
 
             List<VRCUrl> urls = new List<VRCUrl>();
             List<string> titles = new List<string>();
             List<string> artists = new List<string>();
+            List<string> tags = new List<string>();
             List<int> playlistIndices = new List<int>();
             List<string> playlistNames = new List<string>();
+            List<string> playlistArgs = new List<string>();
+            List<string> playlistDescriptions = new List<string>();
 
             int currentSongIndex = 0;
 
             foreach (Playlist playlist in activeLibrary.Playlists)
             {
+                if (playlist.Args.Contains("-a")) { autoplayPlaylistIndices.Add(playlistIndices.Count); }
+
+                if (!playlist.Args.Contains("-c")) { copyrightFreePlaylistIndices.Add(playlistIndices.Count); }
+
                 playlistNames.Add(playlist.Name);
 
                 playlistIndices.Add(currentSongIndex);
+
+                playlistArgs.Add(playlist.Args);
+
+                playlistDescriptions.Add(playlist.Description);
 
                 currentSongIndex += playlist.Songs.Count;
 
@@ -795,20 +891,46 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                     titles.Add(song.Name);
 
                     artists.Add(song.Artist);
+
+                    tags.Add(song.Tags ?? string.Empty);
                 }
             }
 
-            Undo.RecordObject(player.GetComponent<UdonBehaviour>(), "Apply music library to player");
+            foreach(int index in autoplayPlaylistIndices)
+            {
+                if (copyrightFreePlaylistIndices.Contains(index)) { autoplayCopyrightFreePlaylistIndices.Add(index); }
+            }
+
+            UdonBehaviour udonBehaviour = UdonSharpEditorUtility.GetBackingUdonBehaviour(player);
+
+            IUdonVariableTable variables = udonBehaviour.publicVariables;
+
+            bool isUdonSharpOne = variables.TryGetVariableValue("___UdonSharpBehaviourVersion___", out _);
+
+            Undo.RecordObject(isUdonSharpOne ? player : (Object)udonBehaviour, "Apply music library to player");
 
             player.Urls = urls.ToArray();
             player.Titles = titles.ToArray();
             player.Artists = artists.ToArray();
+            player.Tags = tags.ToArray();
             player.PlaylistIndices = playlistIndices.ToArray();
             player.PlaylistNames = playlistNames.ToArray();
+            player.PlaylistArgs = playlistArgs.ToArray();
+            player.PlaylistDescriptions = playlistDescriptions.ToArray();
+            player.AutoplayPlaylistIndices = autoplayPlaylistIndices.ToArray();
+            player.CopyrightFreePlaylistIndices = copyrightFreePlaylistIndices.ToArray();
+            player.AutoplayCopyrightFreePlaylistIndices = autoplayCopyrightFreePlaylistIndices.ToArray();
 
-            player.ApplyProxyModifications();
+            if(!isUdonSharpOne)
+            {
+                player.ApplyProxyModifications();
+            }
+
+            EditorUtility.SetDirty(isUdonSharpOne ? player : (Object)udonBehaviour);
 
             RefreshPlayerStats();
+
+            Debug.Log($"{LogPrefix} Applied Music Library To Player Successfully!");
         }
 
         private void SavePlayerPlaylistsToLibrary()
@@ -845,7 +967,7 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
                 playlists.Add(playlist);
             }
 
-            string filePath = EditorUtility.SaveFilePanelInProject("Save player's playlists to file", "PlayerLibrary", "asset", "Save playlists to file", LibraryPath);
+            string filePath = EditorUtility.SaveFilePanelInProject("Save player's playlists to file", "PlayerLibrary", "asset", "Save playlists to file");
 
             CreateNewLibraryFile(filePath, playlists);
         }
@@ -901,4 +1023,3 @@ namespace Varneon.UdonPrefabs.Essentials.Editor
         #endregion
     }
 }
-#endif
