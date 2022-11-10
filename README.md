@@ -1,3 +1,6 @@
+> # :warning: UdonEssentials is currently in the process of being deprecated!
+> :ballot_box_with_check: The new VUdon prefab ecosystem can be found here: https://github.com/Varneon/VUdon
+
 # UdonEssentials
 <div align="center">
 
